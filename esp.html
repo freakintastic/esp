@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP Solutions - Integrated App</title>
+  
+  <!-- Google Fonts for ESP Solutions -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" 
+    rel="stylesheet"
+  >
+  
+  <!-- External Libraries for Trend App -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <!-- ESP Solutions CSS -->
+  <style>
+    /* Global resets & Baker Hughes–inspired styling */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Open Sans', sans-serif; background: #FFFFFF; color: #333; }
+    header, footer {
+      background: #009193;
+      color: #fff;
+      text-align: center;
+      padding: 1rem;
+    }
+    header h1, footer p { font-weight: 600; }
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .container-table {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    h1, h2, h3 { margin-bottom: 1rem; font-weight: 600; color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+    th, td { padding: 0.75rem; border: 1px solid #ddd; text-align: left; }
+    .btn, .nav-btn {
+      background: #009193;
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0.5rem 0;
+      font-size: 1rem;
+      transition: background 0.2s ease;
+    }
+    .btn:hover, .nav-btn:hover { background: #007A7A; }
+    .calc-section { margin-top: 2rem; }
+    .results {
+      background: #f7f9f9;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+      border: 1px solid #e2e8e8;
+    }
+    .input-group { margin-bottom: 1rem; }
+    label { display: block; margin-bottom: 0.25rem; font-weight: 600; color: #555; }
+    input[type="number"], select, input[type="text"] {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .well-entry {
+      margin: 0.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .well-entry input[type="text"] {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .content { display: none; }
+    .content.active { display: block; }
+  </style>
+  
+  <!-- Trend App CSS (scoped to #trendPage) -->
+  <style>
+    /* Scoped Trend styles so that they only affect the Trend Analysis tab */
+    #trendPage {
+      background-color: #1a1a2f; 
+      color: #ffffff;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    #trendPage * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    #trendPage .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #2d2d44;
+      border-radius: 15px;
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    #trendPage .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    #trendPage .header h1 {
+      color: #4bc0c0;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 4px rgba(75, 192, 192, 0.3);
+    }
+    #trendPage .upload-section {
+      background: #3a3a5a;
+      padding: 1.5rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+      border: 2px dashed #4bc0c0;
+      transition: all 0.3s ease;
+    }
+    #trendPage .upload-section:hover {
+      border-color: #ff9f40;
+      background: #4a4a6a;
+    }
+    #trendPage #fileInput {
+      margin: 1rem 0;
+      color: #ffffff;
+    }
+    #trendPage #excelData {
+      width: 100%;
+      height: 150px;
+      padding: 1rem;
+      background: #2a2a3a;
+      border: 1px solid #4bc0c0;
+      border-radius: 8px;
+      color: #ffffff;
+      margin: 1rem 0;
+      resize: vertical;
+    }
+    #trendPage .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+    #trendPage .slider-container {
+      background: #3a3a5a;
+      padding: 1.5rem;
+      border-radius: 10px;
+    }
+    #trendPage .slider-group {
+      margin: 1rem 0;
+    }
+    #trendPage .slider-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #ff9f40;
+    }
+    #trendPage input[type="range"] {
+      width: 100%;
+      height: 5px;
+      background: #2a2a3a;
+      border-radius: 5px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    #trendPage input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 15px;
+      height: 15px;
+      background: #4bc0c0;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    #trendPage input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    #trendPage #checkboxContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      background: #3a3a5a;
+      padding: 1.5rem;
+      border-radius: 10px;
+    }
+    #trendPage #checkboxContainer label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 5px;
+      transition: background 0.3s ease;
+    }
+    #trendPage #checkboxContainer label:hover {
+      background: rgba(255, 159, 64, 0.1);
+    }
+    #trendPage input[type="checkbox"] {
+      accent-color: #4bc0c0;
+      width: 18px;
+      height: 18px;
+    }
+    #trendPage .chart-container {
+      background: #ffffff;
+      padding: 1.5rem;
+      border-radius: 10px;
+      margin: 2rem 0;
+      position: relative;
+    }
+    #trendPage #loadingSpinner {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #4bc0c0;
+      font-size: 1.5rem;
+    }
+    #trendPage .export-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      justify-content: flex-end;
+    }
+    #trendPage button {
+      background: linear-gradient(135deg, #4bc0c0 0%, #36a2eb 100%);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+    #trendPage button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(75, 192, 192, 0.4);
+      background: linear-gradient(135deg, #ff9f40 0%, #ff6384 100%);
+    }
+    @media (max-width: 768px) {
+      #trendPage .controls {
+        grid-template-columns: 1fr;
+      }
+      #trendPage .container {
+        padding: 1rem;
+      }
+      #trendPage .export-buttons {
+        flex-direction: column;
+      }
+    }
+    /* Excel‑Like Callout Styles */
+    #trendPage .callout {
+      position: absolute;
+      border: 1px solid #666;
+      background: #ffffff;
+      color: #000;
+      border-radius: 5px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      overflow: visible;
+      z-index: 20;
+      padding: 5px;
+      background-color: #ffffff;
+    }
+    #trendPage .callout-delete {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: transparent;
+      border: none;
+      color: #666;
+      font-size: 14px;
+      cursor: pointer;
+      display: none;
+    }
+    #trendPage .callout:hover .callout-delete {
+      display: block;
+    }
+    #trendPage .callout-content {
+      padding: 2px;
+      min-width: 100px;
+      min-height: 30px;
+      outline: none;
+      font-size: 12px;
+      background-color: #ffffff;
+    }
+    #trendPage .callout-resize-handle {
+      width: 10px;
+      height: 10px;
+      background: #666;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      cursor: se-resize;
+    }
+    #trendPage .callout-drag-handle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 10px;
+      cursor: move;
+    }
+    #trendPage .tail-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ESP Solutions</h1>
+  </header>
+  
+  <!-- Main App Pages -->
+  <div id="mainPage" class="content active">
+    <div class="container">
+      <div class="buttons">
+        <button class="btn large-btn" onclick="showPage('commissioningPage')">Commissioning</button>
+        <button class="btn large-btn" onclick="showPage('pgortPage')">PGORT</button>
+        <button class="btn large-btn" onclick="showPage('trendPage')">Trend Analysis</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Commissioning Page -->
+  <div id="commissioningPage" class="content">
+    <div class="container">
+      <div class="buttons">
+        <button class="btn large-btn" onclick="showPage('installationParametersPage')">
+          Installation Parameters & Surface Voltage Calculation
+        </button>
+        <button class="btn large-btn" onclick="showPage('setPointsPage')">SetPoints</button>
+      </div>
+      <div class="navigation-buttons">
+        <button class="nav-btn" onclick="showPage('mainPage')">Main Menu</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Installation Parameters Page -->
+  <div id="installationParametersPage" class="content">
+    <div class="container">
+      <h2>Installation Parameters & Surface Voltage Calculation</h2>
+      <table>
+        <tr><th colspan="2">VSD</th></tr>
+        <tr>
+          <td>Manufacturer</td>
+          <td>
+            <select id="manufacturer-installation">
+              <option value="Baker Hughes">Baker Hughes</option>
+              <option value="SLB">SLB</option>
+              <option value="Alkhorayef">Alkhorayef</option>
+            </select>
+          </td>
+        </tr>
+        <tr><th colspan="2">Motor @50 HZ</th></tr>
+        <tr><td>Desired Frequency</td><td><input type="number" id="desiredFrequency" value=""></td></tr>
+        <tr><td>HP</td><td><input type="number" id="hp" value=""></td></tr>
+        <tr><td>Voltage</td><td><input type="number" id="voltage" value=""></td></tr>
+        <tr><td>Amps</td><td><input type="number" id="amps" value=""></td></tr>
+        <tr><th colspan="2">Cable</th></tr>
+        <tr><td>Length (ft)</td><td><input type="number" id="cableLength" value=""></td></tr>
+        <tr><td>Size</td><td><input type="number" id="cableSize" value=""></td></tr>
+        <tr><th colspan="2">Well</th></tr>
+        <tr><td>BHT (F°)</td><td><input type="number" id="bht" value=""></td></tr>
+      </table>
+      
+      <div class="calc-section">
+        <button class="btn" onclick="calculateVoltageInline()">Calculate Surface Voltage</button>
+        <div class="results" id="voltageResults">
+          <p>Voltage @ 50 HZ: <span id="voltage50Hz">--</span></p>
+          <p>Voltage @ <span id="desiredFrequencyLabel">60</span> HZ: <span id="voltageDesiredHz">--</span></p>
+        </div>
+      </div>
+      
+      <div class="calc-section">
+        <h3>Transformer Ratio Calculation</h3>
+        <div class="input-group">
+          <label for="tapVoltage">Tap Voltage</label>
+          <input type="number" id="tapVoltage" value="">
+        </div>
+        <div class="input-group">
+          <label for="primaryVoltage">Primary Voltage</label>
+          <input type="number" id="primaryVoltage" value="">
+        </div>
+      
+        <button class="btn" onclick="calculateTransformerRatioInline()">Calculate Transformer Ratio</button>
+        <div class="results" id="transformerResults">
+          <p>Transformer Ratio: <span id="transformerRatio">--</span></p>
+        </div>
+      </div>
+      
+      <div class="navigation-buttons">
+        <button class="nav-btn" onclick="showPage('commissioningPage')">Back</button>
+        <button class="nav-btn" onclick="showPage('mainPage')">Main Menu</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- SetPoints Page -->
+  <div id="setPointsPage" class="content">
+    <div class="container">
+      <h2>SetPoints</h2>
+      <table>
+        <tr><th colspan="2">Running Readings</th></tr>
+        <tr><td>Frequency</td><td><input type="number" id="frequency-running" value=""></td></tr>
+        <tr><td>Amps</td><td><input type="number" id="amps-running" value=""></td></tr>
+        <tr><td>Pi</td><td><input type="number" id="pi" value=""></td></tr>
+        <tr><td>Pd</td><td><input type="number" id="pd" value=""></td></tr>
+        <tr><td>Ti</td><td><input type="number" id="ti" value=""></td></tr>
+        <tr><td>Tm</td><td><input type="number" id="tm" value=""></td></tr>
+        <tr><td>WHP</td><td><input type="number" id="whp" value=""></td></tr>
+        <tr><td>FLP</td><td><input type="number" id="flp" value=""></td></tr>
+      </table>
+      <button class="btn" onclick="calculateSetpoints()">Calculate Setpoints</button>
+      <div class="results" id="setpointsResults">
+        <p>OL: <span id="ol-value">--</span></p>
+        <p>UL: <span id="ul-value">--</span></p>
+        <p>Pd: <span id="pd-value-result">--</span></p>
+        <p>Ti: <span id="ti-value">--</span></p>
+        <p>Tm: <span id="tm-value">--</span></p>
+        <p>WHP: <span id="whp-value">--</span></p>
+        <p>FLP: <span id="flp-value">--</span></p>
+      </div>
+      <div class="navigation-buttons">
+        <button class="nav-btn" onclick="showPage('commissioningPage')">Back</button>
+        <button class="nav-btn" onclick="showPage('mainPage')">Main Menu</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- PGORT Page -->
+  <div id="pgortPage" class="content">
+    <div class="container">
+      <h2>PGORT</h2>
+      <table>
+        <tr><th colspan="3">Add Wells Below</th></tr>
+      </table>
+      <div class="wells-container" id="wellsContainer">
+        <button class="btn" onclick="addWell()">+</button>
+      </div>
+      <div class="navigation-buttons">
+        <button class="nav-btn" onclick="showPage('mainPage')">Back</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Well Input Template (hidden) -->
+  <div id="wellInputPageTemplate" class="content" style="display: none;">
+    <div class="container-table">
+      <table>
+        <tr><th colspan="3" class="header-input">Input</th></tr>
+        <tr><td>Frequency</td><td colspan="2"><input type="number" class="frequency-input" value=""></td></tr>
+        <tr><td>Total Surface Rate</td><td colspan="2"><input type="number" class="surface-rate-input" value=""></td></tr>
+        <tr><td>FvF</td><td colspan="2"><input type="number" class="fvf-input" value=""></td></tr>
+        <tr><td>W/C%</td><td colspan="2"><input type="number" class="wc-input" value=""></td></tr>
+        <tr>
+          <td>Range @ 50Hz</td>
+          <td><input type="number" class="range-min-input" placeholder="Min"></td>
+          <td><input type="number" class="range-max-input" placeholder="Max"></td>
+        </tr>
+        <tr><td>Motor NP Amps</td><td colspan="2"><input type="number" class="motor-amps-input" value=""></td></tr>
+        <tr><td>Running Amps</td><td colspan="2"><input type="number" class="running-amps-input" value=""></td></tr>
+      </table>
+      <div class="navigation-buttons">
+        <button class="nav-btn" onclick="showPage('pgortPage')">Back</button>
+        <button class="nav-btn" onclick="calculateWellOutput(this)">Calculate</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Well Output Template (hidden) -->
+  <div id="wellOutputPageTemplate" class="content" style="display: none;">
+    <div class="container-table">
+      <table>
+        <tr><th colspan="3" class="header-output">Output</th></tr>
+        <tr>
+          <td>Range @ <span class="output-frequency"></span> HZ</td>
+          <td colspan="2" id="rangeDesiredHz"></td>
+        </tr>
+        <tr><td>Downhole Rate</td><td colspan="2" id="downholeRange"></td></tr>
+        <tr><td>Status</td><td colspan="2" id="status"></td></tr>
+        <tr><td>Motor Load</td><td colspan="2" id="motorLoad"></td></tr>
+      </table>
+      <div class="navigation-buttons">
+        <button class="nav-btn" onclick="showPage('pgortPage')">Back</button>
+        <button class="nav-btn" onclick="showPage('mainPage')">Main Menu</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Trend Analysis Page -->
+  <div id="trendPage" class="content">
+    <div class="container">
+      <div class="header">
+        <h1>📈 Data Visualization Dashboard</h1>
+        <div class="upload-section">
+          <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" />
+          <textarea id="excelData" placeholder="Paste your data here or upload a file..."></textarea>
+          <button onclick="generateChart()">Generate Chart</button>
+          <button onclick="clearData()">Clear Data</button>
+        </div>
+      </div>
+      <div id="checkboxContainer"></div>
+      <div class="controls">
+        <div class="slider-container">
+          <div class="slider-group">
+            <label>Start Range: <span id="startValue"></span></label>
+            <input type="range" id="startSlider" min="0" value="0" oninput="updateChart()" />
+          </div>
+          <div class="slider-group">
+            <label>End Range: <span id="endValue"></span></label>
+            <input type="range" id="endSlider" min="0" value="0" oninput="updateChart()" />
+          </div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <svg class="tail-svg"></svg>
+        <div id="loadingSpinner"></div>
+        <canvas id="trendChart"></canvas>
+      </div>
+      <div class="export-buttons">
+        <button onclick="exportChartAsImage()">📸 Export as Image</button>
+        <button onclick="exportChartAsPDF()">📄 Export as PDF</button>
+      </div>
+      <div class="navigation-buttons">
+  <button class="nav-btn" onclick="showPage('mainPage')">Main Menu</button>
+</div>
+
+    </div>
+  </div>
+  
+  <footer>
+    <p>Prepared by Eng. Anas amer Aboqayas.</p>
+  </footer>
+  
+  <!-- ESP Solutions JavaScript -->
+  <script>
+    function showPage(pageId) {
+      const pages = document.querySelectorAll('.content');
+      pages.forEach(page => {
+        page.classList.remove('active');
+        page.style.display = 'none';
+      });
+      const target = document.getElementById(pageId);
+      if (target) {
+        target.classList.add('active');
+        target.style.display = 'block';
+      }
+    }
+  
+    function interpolate(x, x1, y1, x2, y2) {
+      return y1 + ((x - x1) * (y2 - y1)) / (x2 - x1);
+    }
+  
+    function getYValue(cableSize, amps) {
+      const cableSizeTables = {
+        1: [[0, 0], [1, 0.226667], [2, 0.453333], [3, 0.68], [4, 0.906667], [5, 1.133333], [6, 1.36], [7, 1.586667], [8, 1.813333], [9, 2.04], [10, 2.266667], [11, 2.493333], [12, 2.72], [13, 2.946667], [14, 3.173333], [15, 3.4], [16, 3.626667], [17, 3.853333], [18, 4.08], [19, 4.306667], [20, 4.533333], [21, 4.76], [22, 4.986667], [23, 5.213333], [24, 5.44], [25, 5.666667], [26, 5.893333], [27, 6.12], [28, 6.346667], [29, 6.573333], [30, 6.8], [31, 7.026667], [32, 7.253333], [33, 7.48], [34, 7.706667], [35, 7.933333], [36, 8.16], [37, 8.386667], [38, 8.613333], [39, 8.84], [40, 9.066667], [41, 9.293333], [42, 9.52], [43, 9.746667], [44, 9.973333], [45, 10.2], [46, 10.426667], [47, 10.653333], [48, 10.88], [49, 11.106667], [50, 11.333333], [51, 11.56], [52, 11.786667], [53, 12.013333], [54, 12.24], [55, 12.466667], [56, 12.693333], [57, 12.92], [58, 13.146667], [59, 13.373333], [60, 13.6], [61, 13.826667], [62, 14.053333], [63, 14.28], [64, 14.506667], [65, 14.733333], [66, 14.96], [67, 15.186667], [68, 15.413333], [69, 15.64], [70, 15.866667], [71, 16.093333], [72, 16.32], [73, 16.546667], [74, 16.773333], [75, 17.0], [76, 17.226667], [77, 17.453333], [78, 17.68], [79, 17.906667], [80, 18.133333], [81, 18.36], [82, 18.586667], [83, 18.813333], [84, 19.04], [85, 19.266667], [86, 19.493333]],
+        2: [[0, 0], [1, 0.286667], [2, 0.573333], [3, 0.86], [4, 1.146667], [5, 1.433333], [6, 1.72], [7, 2.006667], [8, 2.293333], [9, 2.58], [10, 2.866667], [11, 3.153333], [12, 3.44], [13, 3.726667], [14, 4.013333], [15, 4.3], [16, 4.586667], [17, 4.873333], [18, 5.16], [19, 5.446667], [20, 5.733333], [21, 6.02], [22, 6.306667], [23, 6.593333], [24, 6.88], [25, 7.166667], [26, 7.453333], [27, 7.74], [28, 8.026667], [29, 8.313333], [30, 8.6], [31, 8.886667], [32, 9.173333], [33, 9.46], [34, 9.746667], [35, 10.033333], [36, 10.32], [37, 10.606667], [38, 10.893333], [39, 11.18], [40, 11.466667], [41, 11.753333], [42, 12.04], [43, 12.326667], [44, 12.613333], [45, 12.9], [46, 13.186667], [47, 13.473333], [48, 13.76], [49, 14.046667], [50, 14.333333], [51, 14.62], [52, 14.906667], [53, 15.193333], [54, 15.48], [55, 15.766667], [56, 16.053333], [57, 16.34], [58, 16.626667], [59, 16.913333], [60, 17.2], [61, 17.486667], [62, 17.773333], [63, 18.06], [64, 18.346667], [65, 18.633333], [66, 18.92], [67, 19.206667], [68, 19.493333], [69, 19.78], [70, 20.066667], [71, 20.353333], [72, 20.64], [73, 20.926667], [74, 21.213333], [75, 21.5], [76, 21.786667], [77, 22.073333], [78, 22.36], [79, 22.646667], [80, 22.933333], [81, 23.22], [82, 23.506667], [83, 23.793333], [84, 24.08], [85, 24.366667], [86, 24.653333]],
+        4: [[0, 0], [1, 0.428571], [2, 0.857143], [3, 1.285714], [4, 1.714286], [5, 2.142857], [6, 2.571429], [7, 3.0], [8, 3.428571], [9, 3.857143], [10, 4.285714], [11, 4.714286], [12, 5.142857], [13, 5.571429], [14, 6.0], [15, 6.428571], [16, 6.857143], [17, 7.285714], [18, 7.714286], [19, 8.142857], [20, 8.571429], [21, 9.0], [22, 9.428571], [23, 9.857143], [24, 10.285714], [25, 10.714286], [26, 11.142857], [27, 11.571429], [28, 12.0], [29, 12.428571], [30, 12.857143], [31, 13.285714], [32, 13.714286], [33, 14.142857], [34, 14.571429], [35, 15.0], [36, 15.428571], [37, 15.857143], [38, 16.285714], [39, 16.714286], [40, 17.142857], [41, 17.571429], [42, 18.0], [43, 18.428571], [44, 18.857143], [45, 19.285714], [46, 19.714286], [47, 20.142857], [48, 20.571429], [49, 21.0], [50, 21.428571], [51, 21.857143], [52, 22.285714], [53, 22.714286], [54, 23.142857], [55, 23.571429], [56, 24.0], [57, 24.428571], [58, 24.857143], [59, 25.285714], [60, 25.714286], [61, 26.142857], [62, 26.571429], [63, 27.0], [64, 27.428571]],
+        6: [[0, 0], [1, 0.705882], [2, 1.411765], [3, 2.117647], [4, 2.823529], [5, 3.529412], [6, 4.235294], [7, 4.941176], [8, 5.647059], [9, 6.352941], [10, 7.058824], [11, 7.764706], [12, 8.470588], [13, 9.176471], [14, 9.882353], [15, 10.588235], [16, 11.294118], [17, 12.0], [18, 12.705882], [19, 13.411765], [20, 14.117647], [21, 14.823529], [22, 15.529412], [23, 16.235294], [24, 16.941176], [25, 17.647059], [26, 18.352941], [27, 19.058824], [28, 19.764706], [29, 20.470588], [30, 21.176471], [31, 21.882353], [32, 22.588235], [33, 23.294118], [34, 24.0], [35, 24.705882], [36, 25.411765], [37, 26.117647], [38, 26.823529], [39, 27.529412], [40, 28.235294], [41, 28.941176], [42, 29.647059], [43, 30.352941], [44, 31.058824], [45, 31.764706], [46, 32.470588], [47, 33.176471], [48, 33.882353], [49, 34.588235], [50, 35.294118], [51, 36.0], [52, 36.705882], [53, 37.411765], [54, 38.117647], [55, 38.823529], [56, 39.529412], [57, 40.235294], [58, 40.941176], [59, 41.647059], [60, 42.352941], [61, 43.058824], [62, 43.764706], [63, 44.470588], [64, 45.176471]]
+      };
+      const table = cableSizeTables[cableSize];
+      for (let i = 0; i < table.length - 1; i++) {
+        const [x1, y1] = table[i];
+        const [x2, y2] = table[i + 1];
+        if (amps >= x1 && amps <= x2) {
+          return interpolate(amps, x1, y1, x2, y2);
+        }
+      }
+      return null;
+    }
+  
+    function getCorrectionFactor(bht) {
+      const tempTable = [
+        [100, 1.07], [110, 1.092], [120, 1.114], [131, 1.12], [149, 1.15], [167, 1.19], [185, 1.23],
+        [203, 1.27], [221, 1.31], [239, 1.35], [257, 1.39], [275, 1.42], [293, 1.46], [302, 1.48]
+      ];
+      for (let i = 0; i < tempTable.length - 1; i++) {
+        const [T1, CF1] = tempTable[i];
+        const [T2, CF2] = tempTable[i + 1];
+        if (bht >= T1 && bht <= T2) {
+          return interpolate(bht, T1, CF1, T2, CF2);
+        }
+      }
+      return null;
+    }
+  
+    function calculateVoltageInline() {
+      const desiredFrequency = parseFloat(document.getElementById('desiredFrequency').value);
+      const voltage = parseFloat(document.getElementById('voltage').value);
+      const amps = parseFloat(document.getElementById('amps').value);
+      const cableLength = parseFloat(document.getElementById('cableLength').value);
+      const cableSize = parseFloat(document.getElementById('cableSize').value);
+      const bht = parseFloat(document.getElementById('bht').value);
+  
+      const yValue = getYValue(cableSize, amps);
+      const correctionFactor = getCorrectionFactor(bht);
+  
+      const voltageDrop = yValue * (cableLength / 1000) * correctionFactor;
+      const voltage50Hz = voltageDrop + voltage;
+      const voltageDesiredHz = (voltage * (desiredFrequency / 50)) + voltageDrop;
+  
+      document.getElementById('voltage50Hz').innerText = voltage50Hz.toFixed(2);
+      document.getElementById('voltageDesiredHz').innerText = voltageDesiredHz.toFixed(2);
+      document.getElementById('desiredFrequencyLabel').innerText = desiredFrequency;
+    }
+  
+    function calculateTransformerRatioInline() {
+      const manufacturer = document.getElementById('manufacturer-installation').value;
+      const tapVoltage = parseFloat(document.getElementById('tapVoltage').value);
+      const primaryVoltage = parseFloat(document.getElementById('primaryVoltage').value);
+      let ratio;
+      if (manufacturer === "SLB") {
+        ratio = primaryVoltage / tapVoltage;
+      } else {
+        ratio = tapVoltage / primaryVoltage;
+      }
+      document.getElementById('transformerRatio').innerText = ratio.toFixed(2);
+    }
+  
+    function calculateSetpoints() {
+      const ampsMotor = parseFloat(document.getElementById('amps').value);
+      const ampsRunning = parseFloat(document.getElementById('amps-running').value);
+      const pdRunning = parseFloat(document.getElementById('pd').value);
+      const tiRunning = parseFloat(document.getElementById('ti').value);
+      const tmRunning = parseFloat(document.getElementById('tm').value);
+      const whpRunning = parseFloat(document.getElementById('whp').value);
+      const flpRunning = parseFloat(document.getElementById('flp').value);
+      const olValue = ampsMotor * 1.1;
+      const ulValue = ampsRunning * 0.8;
+      const pdValue = Math.min(500 + pdRunning, 4500);
+      const tiValue = 30 + tiRunning;
+      const tmValue = 30 + tmRunning;
+      const whpValue = Math.min(400 + whpRunning, 1200);
+      const flpValue = Math.min(350 + flpRunning, 800);
+      document.getElementById('ol-value').innerText = olValue.toFixed(2);
+      document.getElementById('ul-value').innerText = ulValue.toFixed(2);
+      document.getElementById('pd-value-result').innerText = pdValue.toFixed(2);
+      document.getElementById('ti-value').innerText = tiValue.toFixed(2);
+      document.getElementById('tm-value').innerText = tmValue.toFixed(2);
+      document.getElementById('whp-value').innerText = whpValue.toFixed(2);
+      document.getElementById('flp-value').innerText = flpValue.toFixed(2);
+    }
+  
+    // PGORT Functions
+    function addWell() {
+      const wellsContainer = document.getElementById('wellsContainer');
+      const wellCount = wellsContainer.querySelectorAll('.well-entry').length;
+      const wellEntry = document.createElement('div');
+      wellEntry.classList.add('well-entry');
+      const wellId = `well-${wellCount}`;
+      wellEntry.setAttribute("data-well-id", wellId);
+  
+      wellEntry.innerHTML = `
+        <input type="text" placeholder="Well name">
+        <button class="nav-btn" onclick="shareWell('${wellId}')">Share</button>
+        <button class="nav-btn" onclick="selectWell('${wellId}')">Select</button>
+        <button class="nav-btn" onclick="deleteWell(this)">&#128465;</button>
+      `;
+      wellsContainer.appendChild(wellEntry);
+      createWellInputPage(wellId);
+    }
+  
+    function shareWell(wellId) {
+      const wellEntry = document.querySelector(`[data-well-id="${wellId}"]`);
+      const wellName = wellEntry ? wellEntry.querySelector('input[type="text"]').value || wellId : wellId;
+      
+      const outputPage = document.getElementById(wellId + '-output');
+      if (!outputPage) {
+        alert("No output available for " + wellName + ". Make sure to calculate the well output first.");
+        return;
+      }
+      const outputFrequency = outputPage.querySelector('.output-frequency')?.innerText || '';
+      const rangeDesiredHz = outputPage.querySelector('#rangeDesiredHz')?.innerText || '';
+      const downholeRange = outputPage.querySelector('#downholeRange')?.innerText || '';
+      const status = outputPage.querySelector('#status')?.innerText || '';
+      const motorLoad = outputPage.querySelector('#motorLoad')?.innerText || '';
+  
+      const shareMessage = `${wellName}
+Range @${outputFrequency} hz : ${rangeDesiredHz}
+Downhole Rate: ${downholeRange}
+Status: ${status}
+Motor Load: ${motorLoad}`;
+  
+      if (navigator.share) {
+        navigator.share({
+          title: `Well ${wellName} Results`,
+          text: shareMessage
+        }).then(() => {
+          console.log('Successful share');
+        }).catch((error) => {
+          console.log('Error sharing', error);
+        });
+      } else {
+        alert("Share functionality is not supported in this browser. Here are the results:\n" + shareMessage);
+      }
+    }
+  
+    function createWellInputPage(wellId) {
+      const template = document.getElementById('wellInputPageTemplate');
+      const newPage = template.cloneNode(true);
+      newPage.id = wellId + '-input';
+      newPage.style.display = 'none';
+      createWellOutputPage(wellId);
+      document.body.appendChild(newPage);
+    }
+  
+    function createWellOutputPage(wellId) {
+      const template = document.getElementById('wellOutputPageTemplate');
+      const newPage = template.cloneNode(true);
+      newPage.id = wellId + '-output';
+      newPage.style.display = 'none';
+      document.body.appendChild(newPage);
+    }
+  
+    function deleteWell(button) {
+      const wellEntry = button.closest('.well-entry');
+      wellEntry.remove();
+    }
+  
+    function selectWell(wellId) {
+      showPage(wellId + '-input');
+    }
+  
+    function calculateWellOutput(button) {
+      const wellId = button.closest('.content').id.replace('-input', '');
+      const inputPage = document.getElementById(wellId + '-input');
+      const outputPage = document.getElementById(wellId + '-output');
+  
+      const frequency = parseFloat(inputPage.querySelector('.frequency-input').value);
+      const surfaceRate = parseFloat(inputPage.querySelector('.surface-rate-input').value);
+      const fvf = parseFloat(inputPage.querySelector('.fvf-input').value);
+      const wc = parseFloat(inputPage.querySelector('.wc-input').value);
+      const rangeMin50Hz = parseFloat(inputPage.querySelector('.range-min-input').value);
+      const rangeMax50Hz = parseFloat(inputPage.querySelector('.range-max-input').value);
+      const motorNPAmps = parseFloat(inputPage.querySelector('.motor-amps-input').value);
+      const runningAmps = parseFloat(inputPage.querySelector('.running-amps-input').value);
+  
+      const rangeMinDesiredHz = (frequency / 50) * rangeMin50Hz;
+      const rangeMaxDesiredHz = (frequency / 50) * rangeMax50Hz;
+      const downholeRate = ((surfaceRate * (1 - (wc / 100))) * fvf) + (surfaceRate * (wc / 100));
+      let status;
+      if (downholeRate >= rangeMinDesiredHz && downholeRate <= rangeMaxDesiredHz) {
+        status = "In range";
+      } else if (downholeRate < rangeMinDesiredHz) {
+        status = "Down thrust";
+      } else {
+        status = "Up thrust";
+      }
+      const motorLoad = (runningAmps / motorNPAmps) * 100;
+  
+      outputPage.querySelector('.output-frequency').innerText = frequency;
+      outputPage.querySelector('#rangeDesiredHz').innerText = `${rangeMinDesiredHz.toFixed(0)} - ${rangeMaxDesiredHz.toFixed(0)}`;
+      outputPage.querySelector('#downholeRange').innerText = downholeRate.toFixed(0);
+      outputPage.querySelector('#status').innerText = status;
+      outputPage.querySelector('#motorLoad').innerText = motorLoad.toFixed(2) + '%';
+  
+      showPage(wellId + '-output');
+    }
+  </script>
+  
+  <!-- Trend App JavaScript -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      let chart;
+      let allLabels = [];
+      let allDatasets = [];
+      let activeDatasets = [];
+      const colorPalette = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+  
+      const chartContainer = document.querySelector('#trendPage .chart-container');
+      const tailSVG = document.querySelector('#trendPage .tail-svg');
+  
+      function updateTail(bubble) {
+        if (!bubble.tailPoly) return;
+        const containerRect = chartContainer.getBoundingClientRect();
+        const bubbleRect = bubble.getBoundingClientRect();
+        const baseWidth = 20;
+        const baseCenterX = bubbleRect.left + bubbleRect.width / 2;
+        const baseCenterY = bubbleRect.bottom;
+        const baseLeftX = baseCenterX - baseWidth / 2;
+        const baseLeftY = baseCenterY;
+        const baseRightX = baseCenterX + baseWidth / 2;
+        const baseRightY = baseCenterY;
+        const tipX = bubble.clickedX;
+        const tipY = bubble.clickedY;
+        const p1 = `${baseLeftX - containerRect.left},${baseLeftY - containerRect.top}`;
+        const p2 = `${baseRightX - containerRect.left},${baseRightY - containerRect.top}`;
+        const p3 = `${tipX},${tipY}`;
+        const points = `${p1} ${p2} ${p3}`;
+        bubble.tailPoly.setAttribute('points', points);
+      }
+  
+      function excelDateToJSDate(serial) {
+        const excelEpoch = new Date(1899, 11, 30);
+        const daysOffset = serial - 1;
+        const date = new Date(excelEpoch.getTime() + daysOffset * 86400000);
+        const hours = Math.floor((serial % 1) * 24);
+        const minutes = Math.floor(((serial % 1) * 1440) % 60);
+        return `${date.getDate().toString().padStart(2, '0')}/` +
+               `${(date.getMonth() + 1).toString().padStart(2, '0')}/` +
+               `${date.getFullYear()} ` +
+               `${hours.toString().padStart(2, '0')}:` +
+               `${minutes.toString().padStart(2, '0')}`;
+      }
+  
+      document.getElementById('fileInput').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        if (file.name.endsWith('.csv')) {
+          reader.onload = function (e) {
+            document.getElementById('excelData').value = e.target.result;
+            processCSVData(e.target.result);
+          };
+          reader.readAsText(file);
+        } else {
+          reader.onload = function (e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            let jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            if (jsonData.length === 0) {
+              alert("Invalid Excel file. Please upload a valid Excel sheet.");
+              return;
+            }
+            let startIndex = -1;
+            for (let i = 0; i < jsonData.length; i++) {
+              if (!isNaN(jsonData[i][0]) && jsonData[i][1] !== undefined) {
+                startIndex = i - 1;
+                break;
+              }
+            }
+            if (startIndex < 0) {
+              alert("No valid date/time found in the first column.");
+              return;
+            }
+            jsonData = jsonData.slice(startIndex);
+            jsonData.forEach((row, index) => {
+              if (index > 0 && !isNaN(row[0])) {
+                row[0] = excelDateToJSDate(row[0]);
+              }
+            });
+            document.getElementById('excelData').value = jsonData.map(row => row.join('\t')).join('\n');
+            generateChart();
+          };
+          reader.readAsArrayBuffer(file);
+        }
+      });
+  
+      function processCSVData(csvData) {
+        const rows = csvData.split('\n').map(row => row.split(','));
+        if (rows.length < 2) {
+          alert("Invalid CSV file format.");
+          return;
+        }
+        document.getElementById('excelData').value = csvData;
+        generateChart();
+      }
+  
+      window.generateChart = function () {
+        document.getElementById('loadingSpinner').style.display = 'block';
+        const excelData = document.getElementById('excelData').value.trim();
+        if (!excelData) {
+          alert('Please paste or upload data.');
+          return;
+        }
+        const rows = excelData.split('\n').map(row => row.split('\t'));
+        if (rows.length < 2 || rows[0].length < 2) {
+          alert('Invalid data format.');
+          return;
+        }
+        allLabels = rows.slice(1).map(row => row[0] || 'N/A');
+        allDatasets = [];
+        activeDatasets = [];
+  
+        const checkboxContainer = document.getElementById('checkboxContainer');
+        checkboxContainer.innerHTML = '';
+        checkboxContainer.style.display = 'flex';
+        for (let i = 1; i < rows[0].length; i++) {
+          const data = rows.slice(1).map(row => parseFloat(row[i]) || null);
+          const dataset = {
+            label: rows[0][i] || `Dataset ${i}`,
+            data: data,
+            borderColor: colorPalette[i % colorPalette.length],
+            backgroundColor: colorPalette[i % colorPalette.length],
+            borderWidth: 2,
+            fill: false,
+            pointRadius: 0,
+            pointBackgroundColor: colorPalette[i % colorPalette.length],
+            yAxisID: `y${Math.ceil(i / 2)}`
+          };
+          allDatasets.push(dataset);
+          activeDatasets.push(dataset);
+  
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = true;
+          checkbox.onchange = () => {
+            if (checkbox.checked) {
+              activeDatasets.push(dataset);
+            } else {
+              activeDatasets = activeDatasets.filter(ds => ds.label !== dataset.label);
+            }
+            updateChart();
+          };
+  
+          const label = document.createElement('label');
+          label.appendChild(checkbox);
+          label.appendChild(document.createTextNode(` ${dataset.label}`));
+          checkboxContainer.appendChild(label);
+        }
+  
+        const startSlider = document.getElementById('startSlider');
+        const endSlider = document.getElementById('endSlider');
+        startSlider.max = allLabels.length - 1;
+        endSlider.max = allLabels.length - 1;
+        endSlider.value = allLabels.length - 1;
+  
+        updateChart();
+        document.getElementById('loadingSpinner').style.display = 'none';
+      };
+  
+      window.updateChart = function () {
+        const startIndex = parseInt(document.getElementById('startSlider').value, 10);
+        const endIndex = parseInt(document.getElementById('endSlider').value, 10);
+        document.getElementById('startValue').textContent = allLabels[startIndex];
+        document.getElementById('endValue').textContent = allLabels[endIndex];
+  
+        const filteredLabels = allLabels.slice(startIndex, endIndex + 1);
+        const filteredDatasets = activeDatasets.map(dataset => ({
+          ...dataset,
+          data: dataset.data.slice(startIndex, endIndex + 1)
+        }));
+  
+        if (chart) chart.destroy();
+        const ctx = document.getElementById('trendChart').getContext('2d');
+  
+        const scales = {
+          x: {
+            title: { display: true, text: 'Date/Time', color: '#000000' },
+            grid: { color: 'rgba(0, 0, 0, 0.1)' }
+          }
+        };
+  
+        for (let i = 0; i < filteredDatasets.length; i += 2) {
+          const yAxisID = `y${Math.floor(i / 2) + 1}`;
+          const dataset1Name = filteredDatasets[i].label;
+          const dataset2Name = filteredDatasets[i + 1] ? filteredDatasets[i + 1].label : '';
+          const yAxisLabel = dataset2Name ? `${dataset1Name} | ${dataset2Name}` : dataset1Name;
+          const allData = [...filteredDatasets[i].data, ...(filteredDatasets[i + 1] ? filteredDatasets[i + 1].data : [])];
+          const minDataValue = Math.min(...allData);
+          const maxDataValue = Math.max(...allData);
+          const roundUp = (value) => {
+            const power = Math.pow(10, Math.floor(Math.log10(value)));
+            return Math.ceil(value / power) * power;
+          };
+          const roundDown = (value) => {
+            const power = Math.pow(10, Math.floor(Math.log10(value)));
+            return Math.floor(value / power) * power;
+          };
+          const roundedMin = roundDown(minDataValue - (maxDataValue - minDataValue) * 0.05);
+          const roundedMax = roundUp(maxDataValue + (maxDataValue - minDataValue) * 0.05);
+          scales[yAxisID] = {
+            type: 'linear',
+            display: true,
+            position: i % 4 === 0 ? 'left' : 'right',
+            title: { display: true, text: yAxisLabel, color: '#000000' },
+            grid: { color: 'rgba(0, 0, 0, 0.1)' },
+            min: roundedMin,
+            max: roundedMax
+          };
+          filteredDatasets[i].yAxisID = yAxisID;
+          if (filteredDatasets[i + 1]) {
+            filteredDatasets[i + 1].yAxisID = yAxisID;
+          }
+        }
+  
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: { labels: filteredLabels, datasets: filteredDatasets },
+          options: {
+            responsive: true,
+            scales: scales,
+            plugins: {
+              legend: {
+                display: true,
+                labels: {
+                  color: '#000000',
+                  usePointStyle: true,
+                  pointStyle: 'circle'
+                }
+              },
+              annotation: { annotations: {} }
+            },
+            onClick: (event) => handleChartClick(event),
+            backgroundColor: '#ffffff'
+          }
+        });
+      };
+  
+      function handleChartClick(event) {
+        const points = chart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
+        if (!points.length) return;
+        const point = points[0];
+        const x = point.element.x;
+        const y = point.element.y;
+        const canvas = document.getElementById('trendChart');
+        const canvasRect = canvas.getBoundingClientRect();
+        const containerRect = chartContainer.getBoundingClientRect();
+        const offsetX = canvasRect.left - containerRect.left;
+        const offsetY = canvasRect.top - containerRect.top;
+        const clickedX = offsetX + x;
+        const clickedY = offsetY + y;
+        const xValue = chart.data.labels[point.index];
+        const yValue = point.element.$context.raw;
+        const dataset = chart.data.datasets[point.datasetIndex];
+        const defaultText = `<span style="color:#000; font-weight:bold;">Date/Time:</span> <span style="color:#000;">${xValue}</span><br/><span style="color:#000; font-weight:bold;">${dataset.label}:</span> <span style="color:#000;">${yValue}</span>`;
+        createCalloutBubble(clickedX, clickedY, defaultText, point.datasetIndex, point.index);
+      }
+  
+      window.exportChartAsImage = function () {
+        html2canvas(document.querySelector('#trendPage .chart-container'), { backgroundColor: "#ffffff" }).then(function(canvas) {
+          const link = document.createElement('a');
+          link.href = canvas.toDataURL("image/png");
+          link.download = 'chart_with_callouts.png';
+          link.click();
+        });
+      };
+  
+      window.exportChartAsPDF = function () {
+        html2canvas(document.querySelector('#trendPage .chart-container'), { backgroundColor: "#ffffff" }).then(function(canvas) {
+          const imgData = canvas.toDataURL("image/png");
+          const pdf = new jspdf.jsPDF();
+          pdf.addImage(imgData, 'PNG', 10, 10, 180, 100);
+          pdf.save('chart_with_callouts.pdf');
+        });
+      };
+  
+      window.clearData = function () {
+        document.getElementById('loadingSpinner').style.display = 'none';
+        document.getElementById('fileInput').value = "";
+        document.getElementById('excelData').value = "";
+        const checkboxContainer = document.getElementById('checkboxContainer');
+        checkboxContainer.innerHTML = "";
+        checkboxContainer.style.display = "none";
+        const startSlider = document.getElementById('startSlider');
+        const endSlider = document.getElementById('endSlider');
+        startSlider.value = 0;
+        endSlider.value = 0;
+        startSlider.max = 0;
+        endSlider.max = 0;
+        document.getElementById('startValue').textContent = "";
+        document.getElementById('endValue').textContent = "";
+        allLabels = [];
+        allDatasets = [];
+        activeDatasets = [];
+        if (chart) {
+          chart.destroy();
+          chart = null;
+        }
+        const canvas = document.getElementById('trendChart');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        canvas.width = canvas.width;
+      };
+  
+      function createCalloutBubble(clickedX, clickedY, content, datasetIndex, pointIndex) {
+        const bubbleWidth = 150;
+        const bubbleHeight = 100;
+        const bubbleLeft = clickedX - bubbleWidth / 2;
+        const bubbleTop = clickedY - bubbleHeight - 10;
+  
+        const bubble = document.createElement('div');
+        bubble.classList.add('callout');
+        bubble.style.backgroundColor = "#ffffff";
+        bubble.style.width = bubbleWidth + 'px';
+        bubble.style.height = bubbleHeight + 'px';
+        bubble.style.left = bubbleLeft + 'px';
+        bubble.style.top = bubbleTop + 'px';
+  
+        const dragHandle = document.createElement('div');
+        dragHandle.classList.add('callout-drag-handle');
+        bubble.appendChild(dragHandle);
+  
+        const deleteBtn = document.createElement('button');
+        deleteBtn.classList.add('callout-delete');
+        deleteBtn.innerText = '×';
+        bubble.appendChild(deleteBtn);
+  
+        const contentArea = document.createElement('div');
+        contentArea.classList.add('callout-content');
+        contentArea.style.backgroundColor = "#ffffff";
+        contentArea.contentEditable = true;
+        contentArea.innerHTML = content;
+        contentArea.style.fontSize = "12px";
+        bubble.appendChild(contentArea);
+  
+        const resizeHandle = document.createElement('div');
+        resizeHandle.classList.add('callout-resize-handle');
+        bubble.appendChild(resizeHandle);
+  
+        chartContainer.appendChild(bubble);
+  
+        const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        poly.setAttribute("fill", "#ffffff");
+        poly.setAttribute("stroke", "#666");
+        poly.setAttribute("stroke-width", "1");
+        tailSVG.appendChild(poly);
+        bubble.tailPoly = poly;
+  
+        bubble.clickedX = clickedX;
+        bubble.clickedY = clickedY;
+        bubble.datasetIndex = datasetIndex;
+        bubble.pointIndex = pointIndex;
+        updateTail(bubble);
+  
+        deleteBtn.addEventListener('click', function (e) {
+          chartContainer.removeChild(bubble);
+          tailSVG.removeChild(bubble.tailPoly);
+          e.stopPropagation();
+        });
+  
+        makeElementDraggable(bubble, dragHandle);
+        makeElementResizable(bubble, resizeHandle);
+      }
+  
+      function makeElementDraggable(el, handle) {
+        let offsetX, offsetY;
+        handle.addEventListener('mousedown', mouseDownHandler);
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+        handle.addEventListener('touchstart', touchStartHandler, { passive: false });
+        document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+        document.addEventListener('touchend', touchEndHandler);
+  
+        function mouseDownHandler(e) {
+          e.preventDefault();
+          offsetX = e.clientX - el.getBoundingClientRect().left;
+          offsetY = e.clientY - el.getBoundingClientRect().top;
+          document.addEventListener('mousemove', mouseMoveHandler);
+          document.addEventListener('mouseup', mouseUpHandler);
+        }
+  
+        function mouseMoveHandler(e) {
+          e.preventDefault();
+          const containerRect = chartContainer.getBoundingClientRect();
+          el.style.left = (e.clientX - containerRect.left - offsetX) + 'px';
+          el.style.top = (e.clientY - containerRect.top - offsetY) + 'px';
+          updateTail(el);
+        }
+  
+        function mouseUpHandler() {
+          document.removeEventListener('mousemove', mouseMoveHandler);
+          document.removeEventListener('mouseup', mouseUpHandler);
+        }
+  
+        function touchStartHandler(e) {
+          e.preventDefault();
+          const touch = e.touches[0];
+          offsetX = touch.clientX - el.getBoundingClientRect().left;
+          offsetY = touch.clientY - el.getBoundingClientRect().top;
+          document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+          document.addEventListener('touchend', touchEndHandler);
+        }
+  
+        function touchMoveHandler(e) {
+          e.preventDefault();
+          const touch = e.touches[0];
+          const containerRect = chartContainer.getBoundingClientRect();
+          el.style.left = (touch.clientX - containerRect.left - offsetX) + 'px';
+          el.style.top = (touch.clientY - containerRect.top - offsetY) + 'px';
+          updateTail(el);
+        }
+  
+        function touchEndHandler() {
+          document.removeEventListener('touchmove', touchMoveHandler);
+          document.removeEventListener('touchend', touchEndHandler);
+        }
+      }
+  
+      function makeElementResizable(el, handle) {
+        let startX, startY, startWidth, startHeight;
+        const minFontSize = 5;
+        const maxFontSize = 12;
+  
+        const contentArea = el.querySelector('.callout-content');
+        if (contentArea) {
+          contentArea.dataset.originalFontSize = maxFontSize;
+        }
+  
+        handle.addEventListener('mousedown', mouseDownHandler);
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+        handle.addEventListener('touchstart', touchStartHandler, { passive: false });
+        document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+        document.addEventListener('touchend', touchEndHandler);
+  
+        function mouseDownHandler(e) {
+          e.stopPropagation();
+          startX = e.clientX;
+          startY = e.clientY;
+          startWidth = parseInt(document.defaultView.getComputedStyle(el).width, 10);
+          startHeight = parseInt(document.defaultView.getComputedStyle(el).height, 10);
+          document.addEventListener('mousemove', mouseMoveHandler);
+          document.addEventListener('mouseup', mouseUpHandler);
+        }
+  
+        function mouseMoveHandler(e) {
+          e.preventDefault();
+          const newWidth = startWidth + (e.clientX - startX);
+          const newHeight = startHeight + (e.clientY - startY);
+  
+          el.style.width = newWidth + 'px';
+          el.style.height = newHeight + 'px';
+  
+          adjustFontSize(el, newWidth, newHeight);
+  
+          updateTail(el);
+        }
+  
+        function mouseUpHandler() {
+          document.removeEventListener('mousemove', mouseMoveHandler);
+          document.removeEventListener('mouseup', mouseUpHandler);
+        }
+  
+        function touchStartHandler(e) {
+          e.preventDefault();
+          const touch = e.touches[0];
+          startX = touch.clientX;
+          startY = touch.clientY;
+          startWidth = parseInt(document.defaultView.getComputedStyle(el).width, 10);
+          startHeight = parseInt(document.defaultView.getComputedStyle(el).height, 10);
+          document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+          document.addEventListener('touchend', touchEndHandler);
+        }
+  
+        function touchMoveHandler(e) {
+          e.preventDefault();
+          const touch = e.touches[0];
+          const newWidth = startWidth + (touch.clientX - startX);
+          const newHeight = startHeight + (touch.clientY - startY);
+  
+          el.style.width = newWidth + 'px';
+          el.style.height = newHeight + 'px';
+  
+          adjustFontSize(el, newWidth, newHeight);
+  
+          updateTail(el);
+        }
+  
+        function touchEndHandler() {
+          document.removeEventListener('touchmove', touchMoveHandler);
+          document.removeEventListener('touchend', touchEndHandler);
+        }
+  
+        function adjustFontSize(el, width, height) {
+          const contentArea = el.querySelector('.callout-content');
+          if (!contentArea) return;
+  
+          const originalFontSize = parseFloat(contentArea.dataset.originalFontSize);
+  
+          const scaleFactor = Math.min(width / startWidth, height / startHeight);
+  
+          let newFontSize = originalFontSize * scaleFactor;
+  
+          newFontSize = Math.max(minFontSize, Math.min(originalFontSize, newFontSize));
+  
+          contentArea.style.fontSize = newFontSize + 'px';
+        }
+      }
+    });
+// ---------- Installation Parameters Data ----------
+
+// Save installation parameters data to localStorage
+function saveInstallationParameters() {
+  const data = {
+    desiredFrequency: document.getElementById('desiredFrequency').value,
+    voltage: document.getElementById('voltage').value,
+    amps: document.getElementById('amps').value,
+    // ... add other fields as needed
+  };
+  localStorage.setItem('installationParameters', JSON.stringify(data));
+}
+
+// Load installation parameters data from localStorage
+function loadInstallationParameters() {
+  const savedData = JSON.parse(localStorage.getItem('installationParameters'));
+  if (savedData) {
+    document.getElementById('desiredFrequency').value = savedData.desiredFrequency || '';
+    document.getElementById('voltage').value = savedData.voltage || '';
+    document.getElementById('amps').value = savedData.amps || '';
+    // ... populate other fields as needed
+  }
+}
+
+// Attach event listeners to installation parameters fields
+function attachInstallationParametersListeners() {
+  document.getElementById('desiredFrequency').addEventListener('change', saveInstallationParameters);
+  document.getElementById('voltage').addEventListener('change', saveInstallationParameters);
+  document.getElementById('amps').addEventListener('change', saveInstallationParameters);
+  // ... attach listeners for any other input fields
+}
+
+
+// ---------- PGORT Data (Wells) ----------
+
+// Save PGORT wells data to localStorage
+function savePgortData() {
+  const wellsContainer = document.getElementById('wellsContainer');
+  localStorage.setItem('pgortWells', wellsContainer.innerHTML);
+}
+
+// Load PGORT wells data from localStorage
+function loadPgortData() {
+  const storedPgortWells = localStorage.getItem('pgortWells');
+  if (storedPgortWells) {
+    document.getElementById('wellsContainer').innerHTML = storedPgortWells;
+    // Note: You might need to reattach event listeners for dynamically added elements
+  }
+}
+
+// Modify addWell function to save PGORT data after a new well is added
+function addWell() {
+  const wellsContainer = document.getElementById('wellsContainer');
+  const wellCount = wellsContainer.querySelectorAll('.well-entry').length;
+  const wellEntry = document.createElement('div');
+  wellEntry.classList.add('well-entry');
+  const wellId = `well-${wellCount}`;
+  wellEntry.setAttribute("data-well-id", wellId);
+  wellEntry.innerHTML = `
+    <input type="text" placeholder="Well name">
+    <button class="nav-btn" onclick="shareWell('${wellId}')">Share</button>
+    <button class="nav-btn" onclick="selectWell('${wellId}')">Select</button>
+    <button class="nav-btn" onclick="deleteWell(this)">&#128465;</button>
+  `;
+  wellsContainer.appendChild(wellEntry);
+  createWellInputPage(wellId);  // Assuming this creates necessary dynamic pages
+  savePgortData(); // Save after adding a well
+}
+
+// Modify deleteWell function to save PGORT data after a well is removed
+function deleteWell(button) {
+  const wellEntry = button.closest('.well-entry');
+  wellEntry.remove();
+  savePgortData(); // Save after deletion
+}
+
+
+// ---------- Combined Initialization ----------
+
+// When the page loads, load both installation parameters and PGORT data,
+// and attach event listeners so changes are automatically saved.
+window.addEventListener('load', () => {
+  loadInstallationParameters();
+  loadPgortData();
+  attachInstallationParametersListeners();
+});
+  </script>
+</body>
+</html>
+
