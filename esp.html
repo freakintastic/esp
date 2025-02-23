@@ -178,17 +178,11 @@
       outline: none;
       -webkit-appearance: none;
     }
-    #trendPage input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 15px;
-      height: 15px;
-      background: #4bc0c0;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    #trendPage input[type="range"]::-webkit-slider-thumb:hover {
-      transform: scale(1.2);
+    /* Increase slider width on larger screens */
+    @media (min-width: 1024px) {
+      #trendPage input[type="range"] {
+        width: 600px;
+      }
     }
     #trendPage #checkboxContainer {
       display: flex;
@@ -232,11 +226,13 @@
       color: #4bc0c0;
       font-size: 1.5rem;
     }
+    /* Place all export/navigation buttons on one row */
     #trendPage .export-buttons {
       display: flex;
       gap: 1rem;
       margin-top: 2rem;
       justify-content: flex-end;
+      flex-wrap: wrap;
     }
     #trendPage button {
       background: linear-gradient(135deg, #4bc0c0 0%, #36a2eb 100%);
@@ -562,12 +558,11 @@
         <div id="loadingSpinner"></div>
         <canvas id="trendChart"></canvas>
       </div>
+      <!-- Export & Navigation Buttons on the same row -->
       <div class="export-buttons">
         <button onclick="exportChartAsImage()">📸 Export as Image</button>
         <button onclick="exportChartAsPDF()">📄 Export as PDF</button>
         <button onclick="shareChart()">🔗 Share</button>
-      </div>
-      <div class="navigation-buttons">
         <button class="nav-btn" onclick="showPage('mainPage')">Main Menu</button>
       </div>
     </div>
@@ -789,10 +784,8 @@ Motor Load: ${motorLoad}`;
       const wellEntry = button.closest('.well-entry');
       wellEntry.remove();
     }
-  </script>
   
-  <!-- Trend App JavaScript -->
-  <script>
+    // Trend App Functions
     document.addEventListener("DOMContentLoaded", function () {
       let chart;
       let allLabels = [];
@@ -1069,16 +1062,26 @@ Motor Load: ${motorLoad}`;
         });
       };
   
-      window.shareChart = function () {
-        if (navigator.share) {
-          navigator.share({
-            title: 'Trend Chart',
-            text: 'Check out this trend chart from ESP Solutions!'
-          })
-          .then(() => console.log('Share successful'))
-          .catch((error) => console.error('Error sharing:', error));
-        } else {
-          alert("Sharing is not supported on this browser.");
+      // Updated shareChart function: capture chart as image and share file (if supported)
+      window.shareChart = async function () {
+        try {
+          const container = document.querySelector('#trendPage .chart-container');
+          const canvas = await html2canvas(container, { backgroundColor: "#ffffff" });
+          canvas.toBlob(async (blob) => {
+            const file = new File([blob], "chart.png", { type: "image/png" });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                title: "Trend Chart",
+                text: "Check out this trend chart from ESP Solutions!",
+                files: [file]
+              });
+            } else {
+              alert("Sharing files is not supported on this browser. Here's the chart image as data URL:\n" + canvas.toDataURL());
+            }
+          }, "image/png");
+        } catch (error) {
+          console.error("Error capturing chart:", error);
+          alert("Failed to share chart image.");
         }
       };
   
