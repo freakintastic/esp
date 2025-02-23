@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ESP Solutions - Integrated App</title>
   
   <!-- Google Fonts for ESP Solutions -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link 
     href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" 
     rel="stylesheet"
-  >
+  />
   
   <!-- External Libraries for Trend App -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -92,11 +92,8 @@
     }
     .content { display: none; }
     .content.active { display: block; }
-  </style>
-  
-  <!-- Trend App CSS (scoped to #trendPage) -->
-  <style>
-    /* Scoped Trend styles so that they only affect the Trend Analysis tab */
+    
+    /* Trend Analysis Page Styles */
     #trendPage {
       background-color: #1a1a2f; 
       color: #ffffff;
@@ -329,6 +326,19 @@
       pointer-events: none;
       z-index: 10;
     }
+    
+    /* PGORT Well Listing & Input Page Styles */
+    .well-entry { margin-bottom: 1rem; }
+    
+    /* PGORT Input Page */
+    #pgortInputPage {
+      display: none;
+    }
+    #pgortInputPage .container {
+      max-width: 600px;
+    }
+    #pgortInputPage table { margin-bottom: 1rem; }
+    #pgortInputPage h2 { margin-bottom: 1rem; }
   </style>
 </head>
 <body>
@@ -454,7 +464,7 @@
     </div>
   </div>
   
-  <!-- PGORT Page -->
+  <!-- PGORT Page (Well Listing) -->
   <div id="pgortPage" class="content">
     <div class="container">
       <h2>PGORT</h2>
@@ -470,46 +480,54 @@
     </div>
   </div>
   
-  <!-- Well Input Template (hidden) -->
-  <div id="wellInputPageTemplate" class="content" style="display: none;">
-    <div class="container-table">
+  <!-- PGORT Input Page -->
+  <div id="pgortInputPage" class="content">
+    <div class="container">
+      <h2 id="pgortWellNameHeader">Well: </h2>
       <table>
-        <tr><th colspan="3" class="header-input">Input</th></tr>
-        <tr><td>Frequency</td><td colspan="2"><input type="number" class="frequency-input" value=""></td></tr>
-        <tr><td>Total Surface Rate</td><td colspan="2"><input type="number" class="surface-rate-input" value=""></td></tr>
-        <tr><td>FvF</td><td colspan="2"><input type="number" class="fvf-input" value=""></td></tr>
-        <tr><td>W/C%</td><td colspan="2"><input type="number" class="wc-input" value=""></td></tr>
+        <tr>
+          <td>Frequency</td>
+          <td><input type="number" id="pgortFrequency" value=""></td>
+        </tr>
+        <tr>
+          <td>Total Surface Rate</td>
+          <td><input type="number" id="pgortSurfaceRate" value=""></td>
+        </tr>
+        <tr>
+          <td>FvF</td>
+          <td><input type="number" id="pgortFvf" value=""></td>
+        </tr>
+        <tr>
+          <td>W/C%</td>
+          <td><input type="number" id="pgortWc" value=""></td>
+        </tr>
         <tr>
           <td>Range @ 50Hz</td>
-          <td><input type="number" class="range-min-input" placeholder="Min"></td>
-          <td><input type="number" class="range-max-input" placeholder="Max"></td>
+          <td>
+            <input type="number" id="pgortRangeMin" placeholder="Min">
+            <input type="number" id="pgortRangeMax" placeholder="Max">
+          </td>
         </tr>
-        <tr><td>Motor NP Amps</td><td colspan="2"><input type="number" class="motor-amps-input" value=""></td></tr>
-        <tr><td>Running Amps</td><td colspan="2"><input type="number" class="running-amps-input" value=""></td></tr>
-      </table>
-      <div class="navigation-buttons">
-        <button class="nav-btn" onclick="showPage('pgortPage')">Back</button>
-        <button class="nav-btn" onclick="calculateWellOutput(this)">Calculate</button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Well Output Template (hidden) -->
-  <div id="wellOutputPageTemplate" class="content" style="display: none;">
-    <div class="container-table">
-      <table>
-        <tr><th colspan="3" class="header-output">Output</th></tr>
         <tr>
-          <td>Range @ <span class="output-frequency"></span> HZ</td>
-          <td colspan="2" id="rangeDesiredHz"></td>
+          <td>Motor NP Amps</td>
+          <td><input type="number" id="pgortMotorNPAmps" value=""></td>
         </tr>
-        <tr><td>Downhole Rate</td><td colspan="2" id="downholeRange"></td></tr>
-        <tr><td>Status</td><td colspan="2" id="status"></td></tr>
-        <tr><td>Motor Load</td><td colspan="2" id="motorLoad"></td></tr>
+        <tr>
+          <td>Running Amps</td>
+          <td><input type="number" id="pgortRunningAmps" value=""></td>
+        </tr>
       </table>
       <div class="navigation-buttons">
+        <button class="nav-btn" onclick="calculatePgort()">Calculate</button>
         <button class="nav-btn" onclick="showPage('pgortPage')">Back</button>
-        <button class="nav-btn" onclick="showPage('mainPage')">Main Menu</button>
+      </div>
+      <!-- Inline Results Section -->
+      <div class="results" id="pgortResults" style="display: none;">
+        <p>Range @ <span id="pgortOutputFrequency"></span> Hz: <span id="pgortRangeDesiredHz"></span></p>
+        <p>Downhole Rate: <span id="pgortDownholeRate"></span></p>
+        <p>Status: <span id="pgortStatus"></span></p>
+        <p>Motor Load: <span id="pgortMotorLoad"></span></p>
+        <button class="nav-btn" onclick="sharePgort()">Share</button>
       </div>
     </div>
   </div>
@@ -547,11 +565,11 @@
       <div class="export-buttons">
         <button onclick="exportChartAsImage()">📸 Export as Image</button>
         <button onclick="exportChartAsPDF()">📄 Export as PDF</button>
+        <button onclick="shareChart()">🔗 Share</button>
       </div>
       <div class="navigation-buttons">
-  <button class="nav-btn" onclick="showPage('mainPage')">Main Menu</button>
-</div>
-
+        <button class="nav-btn" onclick="showPage('mainPage')">Main Menu</button>
+      </div>
     </div>
   </div>
   
@@ -669,6 +687,8 @@
     }
   
     // PGORT Functions
+  
+    // Create a new well entry in the PGORT listing
     function addWell() {
       const wellsContainer = document.getElementById('wellsContainer');
       const wellCount = wellsContainer.querySelectorAll('.well-entry').length;
@@ -677,90 +697,44 @@
       const wellId = `well-${wellCount}`;
       wellEntry.setAttribute("data-well-id", wellId);
   
+      // The well entry now has an input for the well name and a "Select" button.
+      // When "Select" is pressed, we transfer to the PGORT Input page.
       wellEntry.innerHTML = `
         <input type="text" placeholder="Well name">
-        <button class="nav-btn" onclick="shareWell('${wellId}')">Share</button>
-        <button class="nav-btn" onclick="selectWell('${wellId}')">Select</button>
+        <button class="nav-btn" onclick="goToPgortInput('${wellId}')">Select</button>
         <button class="nav-btn" onclick="deleteWell(this)">&#128465;</button>
       `;
       wellsContainer.appendChild(wellEntry);
-      createWellInputPage(wellId);
     }
   
-    function shareWell(wellId) {
+    // When a well is selected, navigate to the PGORT Input page and display the well name.
+    function goToPgortInput(wellId) {
       const wellEntry = document.querySelector(`[data-well-id="${wellId}"]`);
-      const wellName = wellEntry ? wellEntry.querySelector('input[type="text"]').value || wellId : wellId;
-      
-      const outputPage = document.getElementById(wellId + '-output');
-      if (!outputPage) {
-        alert("No output available for " + wellName + ". Make sure to calculate the well output first.");
-        return;
-      }
-      const outputFrequency = outputPage.querySelector('.output-frequency')?.innerText || '';
-      const rangeDesiredHz = outputPage.querySelector('#rangeDesiredHz')?.innerText || '';
-      const downholeRange = outputPage.querySelector('#downholeRange')?.innerText || '';
-      const status = outputPage.querySelector('#status')?.innerText || '';
-      const motorLoad = outputPage.querySelector('#motorLoad')?.innerText || '';
-  
-      const shareMessage = `${wellName}
-Range @${outputFrequency} hz : ${rangeDesiredHz}
-Downhole Rate: ${downholeRange}
-Status: ${status}
-Motor Load: ${motorLoad}`;
-  
-      if (navigator.share) {
-        navigator.share({
-          title: `Well ${wellName} Results`,
-          text: shareMessage
-        }).then(() => {
-          console.log('Successful share');
-        }).catch((error) => {
-          console.log('Error sharing', error);
-        });
-      } else {
-        alert("Share functionality is not supported in this browser. Here are the results:\n" + shareMessage);
-      }
+      const wellName = wellEntry.querySelector('input[type="text"]').value || wellId;
+      document.getElementById('pgortWellNameHeader').innerText = "Well: " + wellName;
+      // Clear any previous inputs/results if desired.
+      document.getElementById('pgortFrequency').value = "";
+      document.getElementById('pgortSurfaceRate').value = "";
+      document.getElementById('pgortFvf').value = "";
+      document.getElementById('pgortWc').value = "";
+      document.getElementById('pgortRangeMin').value = "";
+      document.getElementById('pgortRangeMax').value = "";
+      document.getElementById('pgortMotorNPAmps').value = "";
+      document.getElementById('pgortRunningAmps').value = "";
+      document.getElementById('pgortResults').style.display = "none";
+      showPage('pgortInputPage');
     }
   
-    function createWellInputPage(wellId) {
-      const template = document.getElementById('wellInputPageTemplate');
-      const newPage = template.cloneNode(true);
-      newPage.id = wellId + '-input';
-      newPage.style.display = 'none';
-      createWellOutputPage(wellId);
-      document.body.appendChild(newPage);
-    }
-  
-    function createWellOutputPage(wellId) {
-      const template = document.getElementById('wellOutputPageTemplate');
-      const newPage = template.cloneNode(true);
-      newPage.id = wellId + '-output';
-      newPage.style.display = 'none';
-      document.body.appendChild(newPage);
-    }
-  
-    function deleteWell(button) {
-      const wellEntry = button.closest('.well-entry');
-      wellEntry.remove();
-    }
-  
-    function selectWell(wellId) {
-      showPage(wellId + '-input');
-    }
-  
-    function calculateWellOutput(button) {
-      const wellId = button.closest('.content').id.replace('-input', '');
-      const inputPage = document.getElementById(wellId + '-input');
-      const outputPage = document.getElementById(wellId + '-output');
-  
-      const frequency = parseFloat(inputPage.querySelector('.frequency-input').value);
-      const surfaceRate = parseFloat(inputPage.querySelector('.surface-rate-input').value);
-      const fvf = parseFloat(inputPage.querySelector('.fvf-input').value);
-      const wc = parseFloat(inputPage.querySelector('.wc-input').value);
-      const rangeMin50Hz = parseFloat(inputPage.querySelector('.range-min-input').value);
-      const rangeMax50Hz = parseFloat(inputPage.querySelector('.range-max-input').value);
-      const motorNPAmps = parseFloat(inputPage.querySelector('.motor-amps-input').value);
-      const runningAmps = parseFloat(inputPage.querySelector('.running-amps-input').value);
+    // Calculate PGORT values and display results on the same page.
+    function calculatePgort() {
+      const frequency = parseFloat(document.getElementById('pgortFrequency').value);
+      const surfaceRate = parseFloat(document.getElementById('pgortSurfaceRate').value);
+      const fvf = parseFloat(document.getElementById('pgortFvf').value);
+      const wc = parseFloat(document.getElementById('pgortWc').value);
+      const rangeMin50Hz = parseFloat(document.getElementById('pgortRangeMin').value);
+      const rangeMax50Hz = parseFloat(document.getElementById('pgortRangeMax').value);
+      const motorNPAmps = parseFloat(document.getElementById('pgortMotorNPAmps').value);
+      const runningAmps = parseFloat(document.getElementById('pgortRunningAmps').value);
   
       const rangeMinDesiredHz = (frequency / 50) * rangeMin50Hz;
       const rangeMaxDesiredHz = (frequency / 50) * rangeMax50Hz;
@@ -775,13 +749,45 @@ Motor Load: ${motorLoad}`;
       }
       const motorLoad = (runningAmps / motorNPAmps) * 100;
   
-      outputPage.querySelector('.output-frequency').innerText = frequency;
-      outputPage.querySelector('#rangeDesiredHz').innerText = `${rangeMinDesiredHz.toFixed(0)} - ${rangeMaxDesiredHz.toFixed(0)}`;
-      outputPage.querySelector('#downholeRange').innerText = downholeRate.toFixed(0);
-      outputPage.querySelector('#status').innerText = status;
-      outputPage.querySelector('#motorLoad').innerText = motorLoad.toFixed(2) + '%';
+      document.getElementById('pgortOutputFrequency').innerText = frequency;
+      document.getElementById('pgortRangeDesiredHz').innerText = `${rangeMinDesiredHz.toFixed(0)} - ${rangeMaxDesiredHz.toFixed(0)}`;
+      document.getElementById('pgortDownholeRate').innerText = downholeRate.toFixed(0);
+      document.getElementById('pgortStatus').innerText = status;
+      document.getElementById('pgortMotorLoad').innerText = motorLoad.toFixed(2) + '%';
   
-      showPage(wellId + '-output');
+      document.getElementById('pgortResults').style.display = 'block';
+    }
+  
+    // Share the PGORT results using the Web Share API.
+    function sharePgort() {
+      const frequency = document.getElementById('pgortOutputFrequency').innerText;
+      const rangeDesiredHz = document.getElementById('pgortRangeDesiredHz').innerText;
+      const downholeRate = document.getElementById('pgortDownholeRate').innerText;
+      const status = document.getElementById('pgortStatus').innerText;
+      const motorLoad = document.getElementById('pgortMotorLoad').innerText;
+      const wellName = document.getElementById('pgortWellNameHeader').innerText;
+  
+      const shareMessage = `${wellName}
+Range @ ${frequency} Hz: ${rangeDesiredHz}
+Downhole Rate: ${downholeRate}
+Status: ${status}
+Motor Load: ${motorLoad}`;
+  
+      if (navigator.share) {
+        navigator.share({
+          title: wellName + " Results",
+          text: shareMessage
+        })
+        .then(() => console.log('Share successful'))
+        .catch(error => console.error('Error sharing:', error));
+      } else {
+        alert("Sharing is not supported on this browser. Results:\n" + shareMessage);
+      }
+    }
+  
+    function deleteWell(button) {
+      const wellEntry = button.closest('.well-entry');
+      wellEntry.remove();
     }
   </script>
   
@@ -1061,6 +1067,19 @@ Motor Load: ${motorLoad}`;
           pdf.addImage(imgData, 'PNG', 10, 10, 180, 100);
           pdf.save('chart_with_callouts.pdf');
         });
+      };
+  
+      window.shareChart = function () {
+        if (navigator.share) {
+          navigator.share({
+            title: 'Trend Chart',
+            text: 'Check out this trend chart from ESP Solutions!'
+          })
+          .then(() => console.log('Share successful'))
+          .catch((error) => console.error('Error sharing:', error));
+        } else {
+          alert("Sharing is not supported on this browser.");
+        }
       };
   
       window.clearData = function () {
