@@ -326,15 +326,14 @@
     /* PGORT Well Listing & Input Page Styles */
     .well-entry { margin-bottom: 1rem; }
     
-    /* PGORT Input Page */
-    #pgortInputPage {
+    /* PGORT Input Page Template */
+    #pgortInputPageTemplate {
       display: none;
     }
-    #pgortInputPage .container {
-      max-width: 600px;
-    }
-    #pgortInputPage table { margin-bottom: 1rem; }
-    #pgortInputPage h2 { margin-bottom: 1rem; }
+    /* Use classes instead of IDs for input elements */
+    .pgortInputPage .container { max-width: 600px; }
+    .pgortInputPage table { margin-bottom: 1rem; }
+    .pgortInputPage h2 { margin-bottom: 1rem; }
   </style>
 </head>
 <body>
@@ -476,53 +475,53 @@
     </div>
   </div>
   
-  <!-- PGORT Input Page -->
-  <div id="pgortInputPage" class="content">
+  <!-- PGORT Input Page Template (hidden) -->
+  <div id="pgortInputPageTemplate" class="content pgortInputPage" style="display: none;">
     <div class="container">
-      <h2 id="pgortWellNameHeader">Well: </h2>
+      <h2 class="pgortWellNameHeader">Well: </h2>
       <table>
         <tr>
           <td>Frequency</td>
-          <td><input type="number" id="pgortFrequency" value=""></td>
+          <td><input type="number" class="pgortFrequency" value=""></td>
         </tr>
         <tr>
           <td>Total Surface Rate</td>
-          <td><input type="number" id="pgortSurfaceRate" value=""></td>
+          <td><input type="number" class="pgortSurfaceRate" value=""></td>
         </tr>
         <tr>
           <td>FvF</td>
-          <td><input type="number" id="pgortFvf" value=""></td>
+          <td><input type="number" class="pgortFvf" value=""></td>
         </tr>
         <tr>
           <td>W/C%</td>
-          <td><input type="number" id="pgortWc" value=""></td>
+          <td><input type="number" class="pgortWc" value=""></td>
         </tr>
         <tr>
           <td>Range @ 50Hz</td>
           <td>
-            <input type="number" id="pgortRangeMin" placeholder="Min">
-            <input type="number" id="pgortRangeMax" placeholder="Max">
+            <input type="number" class="pgortRangeMin" placeholder="Min">
+            <input type="number" class="pgortRangeMax" placeholder="Max">
           </td>
         </tr>
         <tr>
           <td>Motor NP Amps</td>
-          <td><input type="number" id="pgortMotorNPAmps" value=""></td>
+          <td><input type="number" class="pgortMotorNPAmps" value=""></td>
         </tr>
         <tr>
           <td>Running Amps</td>
-          <td><input type="number" id="pgortRunningAmps" value=""></td>
+          <td><input type="number" class="pgortRunningAmps" value=""></td>
         </tr>
       </table>
       <div class="navigation-buttons">
         <button class="nav-btn" onclick="calculatePgort()">Calculate</button>
         <button class="nav-btn" onclick="showPage('pgortPage')">Back</button>
       </div>
-      <!-- Inline Results Section -->
-      <div class="results" id="pgortResults" style="display: none;">
-        <p>Range @ <span id="pgortOutputFrequency"></span> Hz: <span id="pgortRangeDesiredHz"></span></p>
-        <p>Downhole Rate: <span id="pgortDownholeRate"></span></p>
-        <p>Status: <span id="pgortStatus"></span></p>
-        <p>Motor Load: <span id="pgortMotorLoad"></span></p>
+      <!-- Results Section -->
+      <div class="results pgortResults" style="display: none;">
+        <p>Range @ <span class="pgortOutputFrequency"></span> Hz: <span class="pgortRangeDesiredHz"></span></p>
+        <p>Downhole Rate: <span class="pgortDownholeRate"></span></p>
+        <p>Status: <span class="pgortStatus"></span></p>
+        <p>Motor Load: <span class="pgortMotorLoad"></span></p>
         <button class="nav-btn" onclick="sharePgort()">Share</button>
       </div>
     </div>
@@ -693,7 +692,7 @@
       wellEntry.setAttribute("data-well-id", wellId);
   
       // The well entry now has an input for the well name and a "Select" button.
-      // When "Select" is pressed, we transfer to the PGORT Input page.
+      // When "Select" is pressed, we transfer to the well’s own PGORT Input page.
       wellEntry.innerHTML = `
         <input type="text" placeholder="Well name">
         <button class="nav-btn" onclick="goToPgortInput('${wellId}')">Select</button>
@@ -702,26 +701,36 @@
       wellsContainer.appendChild(wellEntry);
     }
   
-    // When a well is selected, navigate to the PGORT Input page and display the well name.
-    // Note: Data is not cleared so that previously entered values remain.
+    // When a well is selected, navigate to its PGORT Input page.
+    // If a page for this well doesn’t exist, clone it from the template.
     function goToPgortInput(wellId) {
       const wellEntry = document.querySelector(`[data-well-id="${wellId}"]`);
       const wellName = wellEntry.querySelector('input[type="text"]').value || wellId;
-      document.getElementById('pgortWellNameHeader').innerText = "Well: " + wellName;
-      // Do not clear the input fields so that entered data remains until changed.
-      showPage('pgortInputPage');
+      let page = document.getElementById("pgortInputPage-" + wellId);
+      if (!page) {
+        const template = document.getElementById("pgortInputPageTemplate");
+        page = template.cloneNode(true);
+        page.id = "pgortInputPage-" + wellId;
+        page.style.display = "none";
+        // Set the well name header using the class
+        page.querySelector(".pgortWellNameHeader").innerText = "Well: " + wellName;
+        document.body.appendChild(page);
+      }
+      showPage(page.id);
     }
   
-    // Calculate PGORT values and display results on the same page.
+    // Calculate PGORT values on the active PGORT Input page.
     function calculatePgort() {
-      const frequency = parseFloat(document.getElementById('pgortFrequency').value);
-      const surfaceRate = parseFloat(document.getElementById('pgortSurfaceRate').value);
-      const fvf = parseFloat(document.getElementById('pgortFvf').value);
-      const wc = parseFloat(document.getElementById('pgortWc').value);
-      const rangeMin50Hz = parseFloat(document.getElementById('pgortRangeMin').value);
-      const rangeMax50Hz = parseFloat(document.getElementById('pgortRangeMax').value);
-      const motorNPAmps = parseFloat(document.getElementById('pgortMotorNPAmps').value);
-      const runningAmps = parseFloat(document.getElementById('pgortRunningAmps').value);
+      const page = document.querySelector(".content.active");
+      if (!page || !page.id.startsWith("pgortInputPage-")) return;
+      const frequency = parseFloat(page.querySelector(".pgortFrequency").value);
+      const surfaceRate = parseFloat(page.querySelector(".pgortSurfaceRate").value);
+      const fvf = parseFloat(page.querySelector(".pgortFvf").value);
+      const wc = parseFloat(page.querySelector(".pgortWc").value);
+      const rangeMin50Hz = parseFloat(page.querySelector(".pgortRangeMin").value);
+      const rangeMax50Hz = parseFloat(page.querySelector(".pgortRangeMax").value);
+      const motorNPAmps = parseFloat(page.querySelector(".pgortMotorNPAmps").value);
+      const runningAmps = parseFloat(page.querySelector(".pgortRunningAmps").value);
   
       const rangeMinDesiredHz = (frequency / 50) * rangeMin50Hz;
       const rangeMaxDesiredHz = (frequency / 50) * rangeMax50Hz;
@@ -736,23 +745,25 @@
       }
       const motorLoad = (runningAmps / motorNPAmps) * 100;
   
-      document.getElementById('pgortOutputFrequency').innerText = frequency;
-      document.getElementById('pgortRangeDesiredHz').innerText = `${rangeMinDesiredHz.toFixed(0)} - ${rangeMaxDesiredHz.toFixed(0)}`;
-      document.getElementById('pgortDownholeRate').innerText = downholeRate.toFixed(0);
-      document.getElementById('pgortStatus').innerText = status;
-      document.getElementById('pgortMotorLoad').innerText = motorLoad.toFixed(2) + '%';
+      page.querySelector(".pgortOutputFrequency").innerText = frequency;
+      page.querySelector(".pgortRangeDesiredHz").innerText = `${rangeMinDesiredHz.toFixed(0)} - ${rangeMaxDesiredHz.toFixed(0)}`;
+      page.querySelector(".pgortDownholeRate").innerText = downholeRate.toFixed(0);
+      page.querySelector(".pgortStatus").innerText = status;
+      page.querySelector(".pgortMotorLoad").innerText = motorLoad.toFixed(2) + '%';
   
-      document.getElementById('pgortResults').style.display = 'block';
+      page.querySelector(".pgortResults").style.display = "block";
     }
   
-    // Share the PGORT results using the Web Share API.
+    // Share the PGORT results from the active PGORT Input page.
     function sharePgort() {
-      const frequency = document.getElementById('pgortOutputFrequency').innerText;
-      const rangeDesiredHz = document.getElementById('pgortRangeDesiredHz').innerText;
-      const downholeRate = document.getElementById('pgortDownholeRate').innerText;
-      const status = document.getElementById('pgortStatus').innerText;
-      const motorLoad = document.getElementById('pgortMotorLoad').innerText;
-      const wellName = document.getElementById('pgortWellNameHeader').innerText;
+      const page = document.querySelector(".content.active");
+      if (!page || !page.id.startsWith("pgortInputPage-")) return;
+      const frequency = page.querySelector(".pgortOutputFrequency").innerText;
+      const rangeDesiredHz = page.querySelector(".pgortRangeDesiredHz").innerText;
+      const downholeRate = page.querySelector(".pgortDownholeRate").innerText;
+      const status = page.querySelector(".pgortStatus").innerText;
+      const motorLoad = page.querySelector(".pgortMotorLoad").innerText;
+      const wellName = page.querySelector(".pgortWellNameHeader").innerText;
   
       const shareMessage = `${wellName}
 Range @ ${frequency} Hz: ${rangeDesiredHz}
