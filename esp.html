@@ -226,7 +226,7 @@
       color: #4bc0c0;
       font-size: 1.5rem;
     }
-    /* Place all export/navigation buttons on one row */
+    /* Export & Navigation buttons in one row */
     #trendPage .export-buttons {
       display: flex;
       gap: 1rem;
@@ -703,20 +703,12 @@
     }
   
     // When a well is selected, navigate to the PGORT Input page and display the well name.
+    // Note: Data is not cleared so that previously entered values remain.
     function goToPgortInput(wellId) {
       const wellEntry = document.querySelector(`[data-well-id="${wellId}"]`);
       const wellName = wellEntry.querySelector('input[type="text"]').value || wellId;
       document.getElementById('pgortWellNameHeader').innerText = "Well: " + wellName;
-      // Clear any previous inputs/results if desired.
-      document.getElementById('pgortFrequency').value = "";
-      document.getElementById('pgortSurfaceRate').value = "";
-      document.getElementById('pgortFvf').value = "";
-      document.getElementById('pgortWc').value = "";
-      document.getElementById('pgortRangeMin').value = "";
-      document.getElementById('pgortRangeMax').value = "";
-      document.getElementById('pgortMotorNPAmps').value = "";
-      document.getElementById('pgortRunningAmps').value = "";
-      document.getElementById('pgortResults').style.display = "none";
+      // Do not clear the input fields so that entered data remains until changed.
       showPage('pgortInputPage');
     }
   
