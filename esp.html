@@ -136,8 +136,14 @@
       border-color: #ff9f40;
       background: #4a4a6a;
     }
+    /* Added flex container for file input and data type dropdown */
+    #trendPage .file-select-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
     #trendPage #fileInput {
-      margin: 1rem 0;
       color: #ffffff;
     }
     #trendPage #excelData {
@@ -330,7 +336,6 @@
     #pgortInputPageTemplate {
       display: none;
     }
-    /* Use classes instead of IDs for input elements */
     .pgortInputPage .container { max-width: 600px; }
     .pgortInputPage table { margin-bottom: 1rem; }
     .pgortInputPage h2 { margin-bottom: 1rem; }
@@ -533,7 +538,16 @@
       <div class="header">
         <h1>📈 Data Visualization Dashboard</h1>
         <div class="upload-section">
-          <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" />
+          <!-- File input and data type dropdown added here -->
+          <div class="file-select-container">
+            <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" />
+            <select id="dataTypeSelect">
+              <option value="scada">Scada</option>
+              <option value="zenith">Zenith Sensor</option>
+              <option value="bhvsd">BH VSD</option>
+              <option value="slbvsd">SLB VSD</option>
+            </select>
+          </div>
           <textarea id="excelData" placeholder="Paste your data here or upload a file..."></textarea>
           <button onclick="generateChart()">Generate Chart</button>
           <button onclick="clearData()">Clear Data</button>
@@ -682,7 +696,6 @@
   
     // PGORT Functions
   
-    // Create a new well entry in the PGORT listing
     function addWell() {
       const wellsContainer = document.getElementById('wellsContainer');
       const wellCount = wellsContainer.querySelectorAll('.well-entry').length;
@@ -691,8 +704,6 @@
       const wellId = `well-${wellCount}`;
       wellEntry.setAttribute("data-well-id", wellId);
   
-      // The well entry now has an input for the well name and a "Select" button.
-      // When "Select" is pressed, we transfer to the well’s own PGORT Input page.
       wellEntry.innerHTML = `
         <input type="text" placeholder="Well name">
         <button class="nav-btn" onclick="goToPgortInput('${wellId}')">Select</button>
@@ -701,8 +712,6 @@
       wellsContainer.appendChild(wellEntry);
     }
   
-    // When a well is selected, navigate to its PGORT Input page.
-    // If a page for this well doesn’t exist, clone it from the template.
     function goToPgortInput(wellId) {
       const wellEntry = document.querySelector(`[data-well-id="${wellId}"]`);
       const wellName = wellEntry.querySelector('input[type="text"]').value || wellId;
@@ -712,14 +721,12 @@
         page = template.cloneNode(true);
         page.id = "pgortInputPage-" + wellId;
         page.style.display = "none";
-        // Set the well name header using the class
         page.querySelector(".pgortWellNameHeader").innerText = "Well: " + wellName;
         document.body.appendChild(page);
       }
       showPage(page.id);
     }
   
-    // Calculate PGORT values on the active PGORT Input page.
     function calculatePgort() {
       const page = document.querySelector(".content.active");
       if (!page || !page.id.startsWith("pgortInputPage-")) return;
@@ -754,7 +761,6 @@
       page.querySelector(".pgortResults").style.display = "block";
     }
   
-    // Share the PGORT results from the active PGORT Input page.
     function sharePgort() {
       const page = document.querySelector(".content.active");
       if (!page || !page.id.startsWith("pgortInputPage-")) return;
@@ -789,6 +795,7 @@ Motor Load: ${motorLoad}`;
     }
   
     // Trend App Functions
+  
     document.addEventListener("DOMContentLoaded", function () {
       let chart;
       let allLabels = [];
@@ -835,54 +842,119 @@ Motor Load: ${motorLoad}`;
       document.getElementById('fileInput').addEventListener('change', function (event) {
         const file = event.target.files[0];
         if (!file) return;
+        const dataType = document.getElementById('dataTypeSelect').value.toLowerCase();
         const reader = new FileReader();
         if (file.name.endsWith('.csv')) {
           reader.onload = function (e) {
-            document.getElementById('excelData').value = e.target.result;
-            processCSVData(e.target.result);
+            const csvData = e.target.result;
+            if (dataType === "scada") {
+              processScadaCSVData(csvData);
+            } else {
+              processCSVData(csvData);
+            }
           };
           reader.readAsText(file);
         } else {
           reader.onload = function (e) {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            let jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-            if (jsonData.length === 0) {
-              alert("Invalid Excel file. Please upload a valid Excel sheet.");
-              return;
-            }
-            let startIndex = -1;
-            for (let i = 0; i < jsonData.length; i++) {
-              if (!isNaN(jsonData[i][0]) && jsonData[i][1] !== undefined) {
-                startIndex = i - 1;
-                break;
+            if (dataType === "scada") {
+              processScadaExcelData(workbook);
+            } else {
+              let jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+              if (jsonData.length === 0) {
+                alert("Invalid Excel file. Please upload a valid Excel sheet.");
+                return;
               }
-            }
-            if (startIndex < 0) {
-              alert("No valid date/time found in the first column.");
-              return;
-            }
-            jsonData = jsonData.slice(startIndex);
-            jsonData.forEach((row, index) => {
-              if (index > 0 && !isNaN(row[0])) {
-                row[0] = excelDateToJSDate(row[0]);
+              let startIndex = -1;
+              for (let i = 0; i < jsonData.length; i++) {
+                if (!isNaN(jsonData[i][0]) && jsonData[i][1] !== undefined) {
+                  startIndex = i - 1;
+                  break;
+                }
               }
-            });
-            document.getElementById('excelData').value = jsonData.map(row => row.join('\t')).join('\n');
-            generateChart();
+              if (startIndex < 0) {
+                alert("No valid date/time found in the first column.");
+                return;
+              }
+              jsonData = jsonData.slice(startIndex);
+              jsonData.forEach((row, index) => {
+                if (index > 0 && !isNaN(row[0])) {
+                  row[0] = excelDateToJSDate(row[0]);
+                }
+              });
+              document.getElementById('excelData').value = jsonData.map(row => row.join('\t')).join('\n');
+              generateChart();
+            }
           };
           reader.readAsArrayBuffer(file);
         }
       });
   
+      // Updated splitting: using regex to split on commas not inside quotes
       function processCSVData(csvData) {
-        const rows = csvData.split('\n').map(row => row.split(','));
+        const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
+          .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
+            .map(cell => cell.replace(/^"|"$/g, "").trim()));
         if (rows.length < 2) {
           alert("Invalid CSV file format.");
           return;
         }
-        document.getElementById('excelData').value = csvData;
+        const processedRows = rows.map(row => row.join('\t'));
+        const processedData = processedRows.join('\n');
+        document.getElementById('excelData').value = processedData;
+        generateChart();
+      }
+  
+      // Updated scada CSV: remove column O and rearrange as A, T, U, V, W, D, F, K, P
+      function processScadaCSVData(csvData) {
+        const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
+          .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
+            .map(cell => cell.replace(/^"|"$/g, "").trim()));
+        if (rows.length < 1) {
+          alert("Invalid CSV file format.");
+          return;
+        }
+        // New order: A (0), T (19), U (20), V (21), W (22), D (3), F (5), K (10), P (15)
+        const scadaColumns = [0, 19, 20, 21, 22, 3, 5, 10, 15];
+        const scadaHeaders = ["Date/Time", "Pi", "Pd", "Ti", "Tm", "WHP", "FLP", "Amps", "Freq"];
+        const processedRows = rows.map((row, rowIndex) => {
+          let newRow = [];
+          scadaColumns.forEach((colIndex) => {
+            newRow.push(row[colIndex] !== undefined ? row[colIndex] : "");
+          });
+          if (rowIndex === 0) {
+            newRow = scadaHeaders;
+          }
+          return newRow;
+        });
+        const processedData = processedRows.map(row => row.join('\t')).join('\n');
+        document.getElementById('excelData').value = processedData;
+        generateChart();
+      }
+  
+      function processScadaExcelData(workbook) {
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        let jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
+        if (jsonData.length < 1) {
+          alert("Invalid Excel file.");
+          return;
+        }
+        // New order: A (0), T (19), U (20), V (21), W (22), D (3), F (5), K (10), P (15)
+        const scadaColumns = [0, 19, 20, 21, 22, 3, 5, 10, 15];
+        const scadaHeaders = ["Date/Time", "Pi", "Pd", "Ti", "Tm", "WHP", "FLP", "Amps", "Freq"];
+        const processedRows = jsonData.map((row, rowIndex) => {
+          let newRow = [];
+          scadaColumns.forEach((colIndex) => {
+            newRow.push(row[colIndex] !== undefined ? row[colIndex] : "");
+          });
+          if (rowIndex === 0) {
+            newRow = scadaHeaders;
+          }
+          return newRow;
+        });
+        const processedData = processedRows.map(row => row.join('\t')).join('\n');
+        document.getElementById('excelData').value = processedData;
         generateChart();
       }
   
@@ -906,7 +978,8 @@ Motor Load: ${motorLoad}`;
         checkboxContainer.innerHTML = '';
         checkboxContainer.style.display = 'flex';
         for (let i = 1; i < rows[0].length; i++) {
-          const data = rows.slice(1).map(row => parseFloat(row[i]) || null);
+          // Remove any commas from the cell before parsing as a number.
+          const data = rows.slice(1).map(row => parseFloat((row[i] || "").replace(/,/g, "")) || null);
           const dataset = {
             label: rows[0][i] || `Dataset ${i}`,
             data: data,
@@ -1065,7 +1138,6 @@ Motor Load: ${motorLoad}`;
         });
       };
   
-      // Updated shareChart function: capture chart as image and share file (if supported)
       window.shareChart = async function () {
         try {
           const container = document.querySelector('#trendPage .chart-container');
