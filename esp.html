@@ -136,7 +136,7 @@
       border-color: #ff9f40;
       background: #4a4a6a;
     }
-    /* Flex container for file input, dropdown, transformer ratio input, and refresh button */
+    /* Flex container for file input, data type dropdown, transformer ratio input, and refresh button */
     #trendPage .file-select-container {
       display: flex;
       align-items: center;
@@ -281,7 +281,7 @@
         margin-top: 10px;
       }
     }
-    /* Callout Styles */
+    /* Excel‑Like Callout Styles */
     #trendPage .callout {
       position: absolute;
       border: 1px solid #666;
@@ -289,9 +289,24 @@
       color: #000;
       border-radius: 5px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
+      overflow: visible;
       z-index: 20;
       padding: 5px;
+      background-color: #ffffff;
+    }
+    #trendPage .callout-delete {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: transparent;
+      border: none;
+      color: #666;
+      font-size: 14px;
+      cursor: pointer;
+      display: none;
+    }
+    #trendPage .callout:hover .callout-delete {
+      display: block;
     }
     #trendPage .callout-content {
       padding: 2px;
@@ -300,8 +315,6 @@
       outline: none;
       font-size: 12px;
       background-color: #ffffff;
-      overflow: auto;
-      word-wrap: break-word;
     }
     #trendPage .callout-resize-handle {
       width: 10px;
@@ -312,15 +325,13 @@
       right: 0;
       cursor: se-resize;
     }
-    #trendPage .callout-move-handle {
+    #trendPage .callout-drag-handle {
       position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 16px;
-      height: 16px;
-      background: #4bc0c0;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 10px;
       cursor: move;
-      z-index: 30;
     }
     #trendPage .tail-svg {
       position: absolute;
@@ -541,7 +552,7 @@
       <div class="header">
         <h1>📈 Data Visualization Dashboard</h1>
         <div class="upload-section">
-          <!-- File input, dropdown, transformer ratio input, and refresh button -->
+          <!-- File input, file type dropdown, transformer ratio input, and TR refresh button -->
           <div class="file-select-container">
             <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" />
             <select id="dataTypeSelect">
@@ -614,7 +625,7 @@
       return y1 + ((x - x1) * (y2 - y1)) / (x2 - x1);
     }
   
-    // getYValue and getCorrectionFactor (unchanged)
+    // (getYValue and getCorrectionFactor remain unchanged)
     function getYValue(cableSize, amps) {
       const cableSizeTables = {
         1: [[0, 0], [1, 0.226667], [2, 0.453333], [3, 0.68], [4, 0.906667],
@@ -720,7 +731,7 @@
       document.getElementById('flp-value').innerText = flpValue.toFixed(2);
     }
   
-    // PGORT Functions (unchanged)
+    // PGORT Functions
     function addWell() {
       const wellsContainer = document.getElementById('wellsContainer');
       const wellCount = wellsContainer.querySelectorAll('.well-entry').length;
@@ -830,9 +841,9 @@ Motor Load: ${motorLoad}`;
       const chartContainer = document.querySelector('#trendPage .chart-container');
       const tailSVG = document.querySelector('#trendPage .tail-svg');
   
-      // --- Data Processing Functions ---
+      // --- Data processing functions ---
   
-      // SCADA processing (restored)
+      // SCADA processing
       function processScadaCSVData(csvData) {
         const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
           .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
@@ -882,17 +893,19 @@ Motor Load: ${motorLoad}`;
         generateChart();
       }
   
-      // Zenith processing: header from row2 (index 1) and data starting from row4 (index 3) (skip row3)
+      // Zenith processing: take header from row2 (index 1) and data from row4 (index 3) downward (skip row3)
       function processZenithCSVData(csvData) {
-        const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
+        const rows = csvData.split(/\r?\n/)
+          .filter(row => row.trim() !== "")
           .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
           .map(cell => cell.replace(/^"|"$/g, "").trim()));
         if (rows.length < 4) {
           alert("Not enough rows for Zenith sensor data.");
           return;
         }
+        // Use headers from row 2 (index 1) and data from row 4 (index 3) downward, skipping row 3 (index 2)
         const header = rows[1].slice(0, 9);
-        const dataRows = rows.slice(3).map(row => row.slice(0, 9)); // row4 onward
+        const dataRows = rows.slice(3).map(row => row.slice(0, 9));
         const processedData = [header, ...dataRows].map(row => row.join('\t')).join('\n');
         document.getElementById('excelData').value = processedData;
         generateChart();
@@ -904,6 +917,7 @@ Motor Load: ${motorLoad}`;
           alert("Not enough rows for Zenith sensor data.");
           return;
         }
+        // Use row2 (index 1) as header and data from row4 (index 3) downward, skipping row3 (index 2)
         const header = jsonData[1].slice(0, 9);
         const dataRows = jsonData.slice(3).map(row => row.slice(0, 9));
         const processedData = [header, ...dataRows].map(row => row.join('\t')).join('\n');
@@ -911,9 +925,11 @@ Motor Load: ${motorLoad}`;
         generateChart();
       }
   
-      // BH VSD processing: header from first column and "Amps" calculated as average of columns B and C (rounded integer)
+      // BH VSD processing: generate a two‑column dataset using the first column and
+      // an "Amps" column calculated as the average of columns B and C (from row 2 downward)
       function processBHVSDCSVData(csvData) {
-        const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
+        const rows = csvData.split(/\r?\n/)
+          .filter(row => row.trim() !== "")
           .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
           .map(cell => cell.replace(/^"|"$/g, "").trim()));
         if (rows.length < 2) {
@@ -927,8 +943,9 @@ Motor Load: ${motorLoad}`;
           const b = parseFloat(row[1]) || 0;
           const c = parseFloat(row[2]) || 0;
           const avg = (b + c) / 2;
-          const calcValue = Math.round(avg / transformerRatio);
-          return [date, calcValue];
+          const calcValue = avg / transformerRatio;
+          // Round the amps value to an integer with no decimals
+          return [date, Math.round(calcValue)];
         });
         const processedData = [newHeader, ...newDataRows].map(row => row.join('\t')).join('\n');
         document.getElementById('excelData').value = processedData;
@@ -948,8 +965,9 @@ Motor Load: ${motorLoad}`;
           const b = parseFloat(row[1]) || 0;
           const c = parseFloat(row[2]) || 0;
           const avg = (b + c) / 2;
-          const calcValue = Math.round(avg / transformerRatio);
-          return [date, calcValue];
+          const calcValue = avg / transformerRatio;
+          // Round to the nearest integer
+          return [date, Math.round(calcValue)];
         });
         const processedData = [newHeader, ...newDataRows].map(row => row.join('\t')).join('\n');
         document.getElementById('excelData').value = processedData;
@@ -976,12 +994,13 @@ Motor Load: ${motorLoad}`;
         const file = event.target.files[0];
         if (!file) return;
         const dataType = document.getElementById('dataTypeSelect').value.toLowerCase();
-        lastDataType = dataType;
+        lastDataType = dataType;  // store for refresh if needed
         const reader = new FileReader();
   
         if (file.name.endsWith('.csv')) {
           reader.onload = function (e) {
             const csvData = e.target.result;
+            // If BH VSD, store raw CSV data for refresh
             if (dataType === "bhvsd") {
               lastRawData = csvData;
               lastFileFormat = "csv";
@@ -1001,6 +1020,7 @@ Motor Load: ${motorLoad}`;
           reader.onload = function (e) {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
+            // If BH VSD, store workbook for refresh
             if (dataType === "bhvsd") {
               lastRawData = workbook;
               lastFileFormat = "excel";
@@ -1055,7 +1075,7 @@ Motor Load: ${motorLoad}`;
         }
       });
   
-      // Refresh BH VSD data when TR value is changed
+      // Function to refresh BH VSD data when TR value is changed
       window.refreshTransformerData = function () {
         if (lastDataType === "bhvsd" && lastRawData) {
           if (lastFileFormat === "csv") {
@@ -1100,6 +1120,7 @@ Motor Load: ${motorLoad}`;
             pointRadius: 0,
             pointBackgroundColor: colorPalette[i % colorPalette.length]
           };
+          // Fixed pair grouping: every two datasets share a pairIndex
           dataset.pairIndex = Math.floor((i - 1) / 2);
           allDatasets.push(dataset);
           activeDatasets.push(dataset);
@@ -1147,7 +1168,7 @@ Motor Load: ${motorLoad}`;
         if (chart) chart.destroy();
         const ctx = document.getElementById('trendChart').getContext('2d');
     
-        // Group datasets by fixed pairIndex
+        // Group datasets by their fixed pairIndex
         const groups = {};
         filteredDatasets.forEach(ds => {
           if (ds.pairIndex !== undefined) {
@@ -1216,7 +1237,6 @@ Motor Load: ${motorLoad}`;
                 }
               }
             },
-            // Use intersect: false so that the closest point is selected on touch/click
             onClick: (event) => handleChartClick(event),
             backgroundColor: '#ffffff'
           }
@@ -1224,8 +1244,7 @@ Motor Load: ${motorLoad}`;
       };
   
       function handleChartClick(event) {
-        // Use intersect: false for easier point selection
-        const points = chart.getElementsAtEventForMode(event, 'nearest', { intersect: false }, true);
+        const points = chart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
         if (!points.length) return;
         const point = points[0];
         const x = point.element.x;
@@ -1314,7 +1333,6 @@ Motor Load: ${motorLoad}`;
         canvas.width = canvas.width;
       };
   
-      // Create a callout bubble with a top-left move handle and a bottom-right resize handle.
       function createCalloutBubble(clickedX, clickedY, content, datasetIndex, pointIndex) {
         const bubbleWidth = 150;
         const bubbleHeight = 100;
@@ -1323,29 +1341,29 @@ Motor Load: ${motorLoad}`;
   
         const bubble = document.createElement('div');
         bubble.classList.add('callout');
+        bubble.style.backgroundColor = "#ffffff";
         bubble.style.width = bubbleWidth + 'px';
         bubble.style.height = bubbleHeight + 'px';
         bubble.style.left = bubbleLeft + 'px';
         bubble.style.top = bubbleTop + 'px';
   
-        // Create a move handle at the top-left corner
-        const moveHandle = document.createElement('div');
-        moveHandle.classList.add('callout-move-handle');
-        bubble.appendChild(moveHandle);
+        const dragHandle = document.createElement('div');
+        dragHandle.classList.add('callout-drag-handle');
+        bubble.appendChild(dragHandle);
   
-        // Create a delete button
         const deleteBtn = document.createElement('button');
         deleteBtn.classList.add('callout-delete');
         deleteBtn.innerText = '×';
         bubble.appendChild(deleteBtn);
   
-        // Create the content area for the callout
         const contentArea = document.createElement('div');
         contentArea.classList.add('callout-content');
+        contentArea.style.backgroundColor = "#ffffff";
+        contentArea.contentEditable = true;
         contentArea.innerHTML = content;
+        contentArea.style.fontSize = "12px";
         bubble.appendChild(contentArea);
   
-        // Create a resize handle at the bottom-right corner
         const resizeHandle = document.createElement('div');
         resizeHandle.classList.add('callout-resize-handle');
         bubble.appendChild(resizeHandle);
@@ -1371,7 +1389,7 @@ Motor Load: ${motorLoad}`;
           e.stopPropagation();
         });
   
-        makeElementDraggable(bubble, moveHandle);
+        makeElementDraggable(bubble, dragHandle);
         makeElementResizable(bubble, resizeHandle);
       }
   
@@ -1383,10 +1401,14 @@ Motor Load: ${motorLoad}`;
         const baseCenterX = bubbleRect.left + bubbleRect.width / 2;
         const baseCenterY = bubbleRect.bottom;
         const baseLeftX = baseCenterX - baseWidth / 2;
+        const baseLeftY = baseCenterY;
         const baseRightX = baseCenterX + baseWidth / 2;
-        const p1 = `${baseLeftX - containerRect.left},${baseCenterY - containerRect.top}`;
-        const p2 = `${baseRightX - containerRect.left},${baseCenterY - containerRect.top}`;
-        const p3 = `${bubble.clickedX},${bubble.clickedY}`;
+        const baseRightY = baseCenterY;
+        const tipX = bubble.clickedX;
+        const tipY = bubble.clickedY;
+        const p1 = `${baseLeftX - containerRect.left},${baseLeftY - containerRect.top}`;
+        const p2 = `${baseRightX - containerRect.left},${baseRightY - containerRect.top}`;
+        const p3 = `${tipX},${tipY}`;
         const points = `${p1} ${p2} ${p3}`;
         bubble.tailPoly.setAttribute('points', points);
       }
@@ -1538,8 +1560,9 @@ Motor Load: ${motorLoad}`;
           if (!contentArea) return;
   
           const originalFontSize = parseFloat(contentArea.dataset.originalFontSize);
-          // Keep font size fixed for consistency.
-          contentArea.style.fontSize = originalFontSize + 'px';
+          const scaleFactor = Math.min(width / el.offsetWidth, height / el.offsetHeight);
+          const newFontSize = Math.max(minFontSize, Math.min(maxFontSize, originalFontSize * scaleFactor));
+          contentArea.style.fontSize = newFontSize + 'px';
         }
       }
     });
