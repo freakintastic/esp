@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ESP Solutions - Integrated App</title>
   
-  <!-- Google Fonts -->
+  <!-- Google Fonts for ESP Solutions -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link 
@@ -13,15 +13,15 @@
     rel="stylesheet"
   />
   
-  <!-- External Libraries for Trend App -->
+  <!-- External Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
-  <!-- CSS Styles -->
+  <!-- ESP Solutions CSS -->
   <style>
-    /* Global resets & styling */
+    /* Global resets & Baker Hughes–inspired styling */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Open Sans', sans-serif; background: #FFFFFF; color: #333; }
     header, footer {
@@ -136,16 +136,14 @@
       border-color: #ff9f40;
       background: #4a4a6a;
     }
-    /* Flex container for file input, dropdown and BH VSD options */
+    /* File input container */
     #trendPage .file-select-container {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 1rem;
     }
-    #trendPage #fileInput {
-      color: #ffffff;
-    }
+    #trendPage #fileInput { color: #ffffff; }
     #trendPage #excelData {
       width: 100%;
       height: 150px;
@@ -185,9 +183,7 @@
       -webkit-appearance: none;
     }
     @media (min-width: 1024px) {
-      #trendPage input[type="range"] {
-        width: 600px;
-      }
+      #trendPage input[type="range"] { width: 600px; }
     }
     #trendPage #checkboxContainer {
       display: flex;
@@ -255,24 +251,9 @@
       background: linear-gradient(135deg, #ff9f40 0%, #ff6384 100%);
     }
     @media (max-width: 768px) {
-      #trendPage .controls {
-        grid-template-columns: 1fr;
-      }
-      #trendPage .container {
-        padding: 1rem;
-      }
-      #trendPage .export-buttons {
-        flex-direction: column;
-      }
-      /* Mobile adjustments for file-select-container: stack items vertically */
-      #trendPage .file-select-container {
-        flex-direction: column;
-      }
-      #trendPage .file-select-container input,
-      #trendPage .file-select-container select,
-      #trendPage #bhvsdOptions {
-        width: 100%;
-      }
+      #trendPage .controls { grid-template-columns: 1fr; }
+      #trendPage .container { padding: 1rem; }
+      #trendPage .export-buttons { flex-direction: column; }
     }
     /* Excel‑Like Callout Styles */
     #trendPage .callout {
@@ -281,11 +262,10 @@
       background: #ffffff;
       color: #000;
       border-radius: 5px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      box-shadow: none;
       overflow: visible;
       z-index: 20;
       padding: 5px;
-      background-color: #ffffff;
     }
     #trendPage .callout-delete {
       position: absolute;
@@ -298,9 +278,7 @@
       cursor: pointer;
       display: none;
     }
-    #trendPage .callout:hover .callout-delete {
-      display: block;
-    }
+    #trendPage .callout:hover .callout-delete { display: block; }
     #trendPage .callout-content {
       padding: 2px;
       min-width: 100px;
@@ -308,9 +286,6 @@
       outline: none;
       font-size: 12px;
       background-color: #ffffff;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      white-space: normal;
     }
     #trendPage .callout-resize-handle {
       width: 10px;
@@ -338,17 +313,6 @@
       pointer-events: none;
       z-index: 10;
     }
-    
-    /* PGORT Well Listing & Input Page Styles */
-    .well-entry { margin-bottom: 1rem; }
-    
-    /* PGORT Input Page Template */
-    #pgortInputPageTemplate {
-      display: none;
-    }
-    .pgortInputPage .container { max-width: 600px; }
-    .pgortInputPage table { margin-bottom: 1rem; }
-    .pgortInputPage h2 { margin-bottom: 1rem; }
   </style>
 </head>
 <body>
@@ -409,7 +373,6 @@
         <tr><th colspan="2">Well</th></tr>
         <tr><td>BHT (F°)</td><td><input type="number" id="bht" value=""></td></tr>
       </table>
-      
       <div class="calc-section">
         <button class="btn" onclick="calculateVoltageInline()">Calculate Surface Voltage</button>
         <div class="results" id="voltageResults">
@@ -417,7 +380,6 @@
           <p>Voltage @ <span id="desiredFrequencyLabel">60</span> HZ: <span id="voltageDesiredHz">--</span></p>
         </div>
       </div>
-      
       <div class="calc-section">
         <h3>Transformer Ratio Calculation</h3>
         <div class="input-group">
@@ -428,13 +390,11 @@
           <label for="primaryVoltage">Primary Voltage</label>
           <input type="number" id="primaryVoltage" value="">
         </div>
-      
         <button class="btn" onclick="calculateTransformerRatioInline()">Calculate Transformer Ratio</button>
         <div class="results" id="transformerResults">
           <p>Transformer Ratio: <span id="transformerRatio">--</span></p>
         </div>
       </div>
-      
       <div class="navigation-buttons">
         <button class="nav-btn" onclick="showPage('commissioningPage')">Back</button>
         <button class="nav-btn" onclick="showPage('mainPage')">Main Menu</button>
@@ -542,13 +502,12 @@
     </div>
   </div>
   
-  <!-- Trend Analysis Page with Mobile Optimizations and BH VSD/ZENITH Processing -->
+  <!-- Trend Analysis Page -->
   <div id="trendPage" class="content">
     <div class="container">
       <div class="header">
         <h1>📈 Data Visualization Dashboard</h1>
         <div class="upload-section">
-          <!-- File input, data type dropdown, and BH VSD options -->
           <div class="file-select-container">
             <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" />
             <select id="dataTypeSelect">
@@ -557,12 +516,6 @@
               <option value="bhvsd">BH VSD</option>
               <option value="slbvsd">SLB VSD</option>
             </select>
-            <!-- BH VSD extra options (initially hidden) -->
-            <div id="bhvsdOptions" style="display: none; flex-direction: column; gap: 5px;">
-              <label for="trValue" style="color: #fff; font-size: 0.9rem;">TR Value:</label>
-              <input type="number" id="trValue" placeholder="Enter TR value" style="padding: 0.4rem; border-radius: 4px; border: 1px solid #ccc;">
-              <button id="refreshTR" class="btn" onclick="refreshBHvsd()">Refresh</button>
-            </div>
           </div>
           <textarea id="excelData" placeholder="Paste your data here or upload a file..."></textarea>
           <button onclick="generateChart()">Generate Chart</button>
@@ -600,7 +553,7 @@
     <p>Prepared by Eng. Anas amer Aboqayas.</p>
   </footer>
   
-  <!-- JavaScript Functions -->
+  <!-- ESP Solutions JavaScript -->
   <script>
     function showPage(pageId) {
       const pages = document.querySelectorAll('.content');
@@ -639,8 +592,10 @@
   
     function getCorrectionFactor(bht) {
       const tempTable = [
-        [100, 1.07], [110, 1.092], [120, 1.114], [131, 1.12], [149, 1.15], [167, 1.19], [185, 1.23],
-        [203, 1.27], [221, 1.31], [239, 1.35], [257, 1.39], [275, 1.42], [293, 1.46], [302, 1.48]
+        [100, 1.07], [110, 1.092], [120, 1.114], [131, 1.12],
+        [149, 1.15], [167, 1.19], [185, 1.23], [203, 1.27],
+        [221, 1.31], [239, 1.35], [257, 1.39], [275, 1.42],
+        [293, 1.46], [302, 1.48]
       ];
       for (let i = 0; i < tempTable.length - 1; i++) {
         const [T1, CF1] = tempTable[i];
@@ -717,7 +672,6 @@
       wellEntry.classList.add('well-entry');
       const wellId = `well-${wellCount}`;
       wellEntry.setAttribute("data-well-id", wellId);
-  
       wellEntry.innerHTML = `
         <input type="text" placeholder="Well name">
         <button class="nav-btn" onclick="goToPgortInput('${wellId}')">Select</button>
@@ -765,13 +719,11 @@
         status = "Up thrust";
       }
       const motorLoad = (runningAmps / motorNPAmps) * 100;
-  
       page.querySelector(".pgortOutputFrequency").innerText = frequency;
       page.querySelector(".pgortRangeDesiredHz").innerText = `${rangeMinDesiredHz.toFixed(0)} - ${rangeMaxDesiredHz.toFixed(0)}`;
       page.querySelector(".pgortDownholeRate").innerText = downholeRate.toFixed(0);
       page.querySelector(".pgortStatus").innerText = status;
       page.querySelector(".pgortMotorLoad").innerText = motorLoad.toFixed(2) + '%';
-  
       page.querySelector(".pgortResults").style.display = "block";
     }
   
@@ -784,13 +736,11 @@
       const status = page.querySelector(".pgortStatus").innerText;
       const motorLoad = page.querySelector(".pgortMotorLoad").innerText;
       const wellName = page.querySelector(".pgortWellNameHeader").innerText;
-  
       const shareMessage = `${wellName}
 Range @ ${frequency} Hz: ${rangeDesiredHz}
 Downhole Rate: ${downholeRate}
 Status: ${status}
 Motor Load: ${motorLoad}`;
-  
       if (navigator.share) {
         navigator.share({
           title: wellName + " Results",
@@ -808,710 +758,582 @@ Motor Load: ${motorLoad}`;
       wellEntry.remove();
     }
   
-    // Trend App Functions
-    document.addEventListener("DOMContentLoaded", function () {
-      let chart;
-      let allLabels = [];
-      let allDatasets = [];
-      let activeDatasets = [];
-      const colorPalette = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+    // ----------------------------
+    // Trend App Functions - UPDATED (with dynamic y-axis titles)
+    // ----------------------------
   
-      const chartContainer = document.querySelector('#trendPage .chart-container');
-      const tailSVG = document.querySelector('#trendPage .tail-svg');
+    let chart;
+    let allLabels = [];
+    let allDatasets = [];
+    const colorPalette = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+    const chartContainer = document.querySelector('#trendPage .chart-container');
+    const tailSVG = document.querySelector('#trendPage .tail-svg');
   
-      function updateTail(bubble) {
-        if (!bubble.tailPoly) return;
-        const containerRect = chartContainer.getBoundingClientRect();
-        const bubbleRect = bubble.getBoundingClientRect();
-        const baseWidth = 20;
-        const baseCenterX = bubbleRect.left + bubbleRect.width / 2;
-        const baseCenterY = bubbleRect.bottom;
-        const baseLeftX = baseCenterX - baseWidth / 2;
-        const baseRightX = baseCenterX + baseWidth / 2;
-        const tipX = bubble.clickedX;
-        const tipY = bubble.clickedY;
-        const p1 = `${baseLeftX - containerRect.left},${baseCenterY - containerRect.top}`;
-        const p2 = `${baseRightX - containerRect.left},${baseCenterY - containerRect.top}`;
-        const p3 = `${tipX},${tipY}`;
-        const points = `${p1} ${p2} ${p3}`;
-        bubble.tailPoly.setAttribute('points', points);
-      }
+    function excelDateToJSDate(serial) {
+      const excelEpoch = new Date(1899, 11, 30);
+      const daysOffset = serial - 1;
+      const date = new Date(excelEpoch.getTime() + daysOffset * 86400000);
+      const hours = Math.floor((serial % 1) * 24);
+      const minutes = Math.floor(((serial % 1) * 1440) % 60);
+      return `${date.getDate().toString().padStart(2, '0')}/` +
+             `${(date.getMonth() + 1).toString().padStart(2, '0')}/` +
+             `${date.getFullYear()} ` +
+             `${hours.toString().padStart(2, '0')}:` +
+             `${minutes.toString().padStart(2, '0')}`;
+    }
   
-      function excelDateToJSDate(serial) {
-        const excelEpoch = new Date(1899, 11, 30);
-        const daysOffset = serial - 1;
-        const date = new Date(excelEpoch.getTime() + daysOffset * 86400000);
-        const hours = Math.floor((serial % 1) * 24);
-        const minutes = Math.floor(((serial % 1) * 1440) % 60);
-        return `${date.getDate().toString().padStart(2, '0')}/` +
-               `${(date.getMonth() + 1).toString().padStart(2, '0')}/` +
-               `${date.getFullYear()} ` +
-               `${hours.toString().padStart(2, '0')}:` +
-               `${minutes.toString().padStart(2, '0')}`;
-      }
-  
-      document.getElementById('fileInput').addEventListener('change', function (event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const dataType = document.getElementById('dataTypeSelect').value.toLowerCase();
-        const reader = new FileReader();
-        if (file.name.endsWith('.csv')) {
-          reader.onload = function (e) {
-            const csvData = e.target.result;
-            if (dataType === "scada") {
-              processScadaCSVData(csvData);
-            } else if (dataType === "bhvsd") {
-              window.originalBHvsdCSVData = csvData;
-              processBHvsdCSVData(csvData);
-            } else if (dataType === "zenith") {
-              processZenithCSVData(csvData);
-            } else {
-              processCSVData(csvData);
-            }
-          };
-          reader.readAsText(file);
-        } else {
-          reader.onload = function (e) {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            if (dataType === "scada") {
-              processScadaExcelData(workbook);
-            } else if (dataType === "bhvsd") {
-              window.originalBHvsdExcelData = workbook;
-              processBHvsdExcelData(workbook);
-            } else if (dataType === "zenith") {
-              processZenithExcelData(workbook);
-            } else {
-              let jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-              if (jsonData.length === 0) {
-                alert("Invalid Excel file. Please upload a valid Excel sheet.");
-                return;
-              }
-              let startIndex = -1;
-              for (let i = 0; i < jsonData.length; i++) {
-                if (!isNaN(jsonData[i][0]) && jsonData[i][1] !== undefined) {
-                  startIndex = i - 1;
-                  break;
-                }
-              }
-              if (startIndex < 0) {
-                alert("No valid date/time found in the first column.");
-                return;
-              }
-              jsonData = jsonData.slice(startIndex);
-              jsonData.forEach((row, index) => {
-                if (index > 0 && !isNaN(row[0])) {
-                  row[0] = excelDateToJSDate(row[0]);
-                }
-              });
-              document.getElementById('excelData').value = jsonData.map(row => row.join('\t')).join('\n');
-              generateChart();
-            }
-          };
-          reader.readAsArrayBuffer(file);
-        }
-      });
-  
-      function processCSVData(csvData) {
-        const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
-          .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
-            .map(cell => cell.replace(/^"|"$/g, "").trim()));
-        if (rows.length < 2) {
-          alert("Invalid CSV file format.");
-          return;
-        }
-        const processedRows = rows.map(row => row.join('\t'));
-        const processedData = processedRows.join('\n');
-        document.getElementById('excelData').value = processedData;
-        generateChart();
-      }
-  
-      function processScadaCSVData(csvData) {
-        const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
-          .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
-            .map(cell => cell.replace(/^"|"$/g, "").trim()));
-        if (rows.length < 1) {
-          alert("Invalid CSV file format.");
-          return;
-        }
-        const scadaColumns = [0, 19, 20, 21, 22, 3, 5, 10, 15];
-        const scadaHeaders = ["Date/Time", "Pi", "Pd", "Ti", "Tm", "WHP", "FLP", "Amps", "Freq"];
-        const processedRows = rows.map((row, rowIndex) => {
-          let newRow = [];
-          scadaColumns.forEach((colIndex) => {
-            newRow.push(row[colIndex] !== undefined ? row[colIndex] : "");
-          });
-          if (rowIndex === 0) {
-            newRow = scadaHeaders;
-          }
-          return newRow;
-        });
-        const processedData = processedRows.map(row => row.join('\t')).join('\n');
-        document.getElementById('excelData').value = processedData;
-        generateChart();
-      }
-  
-      function processScadaExcelData(workbook) {
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        let jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
-        if (jsonData.length < 1) {
-          alert("Invalid Excel file.");
-          return;
-        }
-        const scadaColumns = [0, 19, 20, 21, 22, 3, 5, 10, 15];
-        const scadaHeaders = ["Date/Time", "Pi", "Pd", "Ti", "Tm", "WHP", "FLP", "Amps", "Freq"];
-        const processedRows = jsonData.map((row, rowIndex) => {
-          let newRow = [];
-          scadaColumns.forEach((colIndex) => {
-            newRow.push(row[colIndex] !== undefined ? row[colIndex] : "");
-          });
-          if (rowIndex === 0) {
-            newRow = scadaHeaders;
-          }
-          return newRow;
-        });
-        const processedData = processedRows.map(row => row.join('\t')).join('\n');
-        document.getElementById('excelData').value = processedData;
-        generateChart();
-      }
-  
-      // BH VSD processing functions
-      function processBHvsdCSVData(csvData) {
-        const trValue = parseFloat(document.getElementById('trValue').value);
-        if (!trValue || trValue <= 0) {
-          alert("Please enter a valid TR value for BH VSD processing.");
-          return;
-        }
-        const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "").map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/));
-        if (rows.length < 2) {
-          alert("Invalid CSV format for BH VSD.");
-          return;
-        }
-        // Insert header "amps" as second column header
-        rows[0].splice(1, 0, "amps");
-        // For each subsequent row, average values from column B and C, then divide by TR
-        for (let i = 1; i < rows.length; i++) {
-          let row = rows[i];
-          let valB = parseFloat(row[1]) || 0;
-          let valC = parseFloat(row[2]) || 0;
-          let avg = (valB + valC) / 2;
-          let computed = avg / trValue;
-          row.splice(1, 0, computed.toFixed(2));
-        }
-        document.getElementById('excelData').value = rows.map(r => r.join('\t')).join('\n');
-        generateChart();
-      }
-  
-      function processBHvsdExcelData(workbook) {
-        const trValue = parseFloat(document.getElementById('trValue').value);
-        if (!trValue || trValue <= 0) {
-          alert("Please enter a valid TR value for BH VSD processing.");
-          return;
-        }
-        let jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-        if (jsonData.length < 2) {
-          alert("Invalid Excel file for BH VSD.");
-          return;
-        }
-        jsonData[0].splice(1, 0, "amps");
-        for (let i = 1; i < jsonData.length; i++) {
-          let row = jsonData[i];
-          let valB = parseFloat(row[1]) || 0;
-          let valC = parseFloat(row[2]) || 0;
-          let avg = (valB + valC) / 2;
-          let computed = avg / trValue;
-          row.splice(1, 0, computed.toFixed(2));
-        }
-        document.getElementById('excelData').value = jsonData.map(row => row.join('\t')).join('\n');
-        generateChart();
-      }
-  
-      // Zenith processing functions
-      function processZenithCSVData(csvData) {
-        const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "").map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/));
-        if (rows.length < 1) {
-          alert("Invalid CSV file for Zenith Sensor.");
-          return;
-        }
-        // Scan column A until "Date/Time" is found
-        let headerRowIndex = rows.findIndex(row => row[0] && row[0].toLowerCase().includes("date/time"));
-        if (headerRowIndex < 0 || headerRowIndex + 2 >= rows.length) {
-          alert("Could not locate a valid header row in Zenith data.");
-          return;
-        }
-        let headers = rows[headerRowIndex];
-        let dataRows = rows.slice(headerRowIndex + 2);
-        let processed = [headers].concat(dataRows);
-        document.getElementById('excelData').value = processed.map(r => r.join('\t')).join('\n');
-        generateChart();
-      }
-  
-      function processZenithExcelData(workbook) {
-        let jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-        if (jsonData.length < 1) {
-          alert("Invalid Excel file for Zenith Sensor.");
-          return;
-        }
-        let headerRowIndex = jsonData.findIndex(row => row[0] && row[0].toLowerCase().includes("date/time"));
-        if (headerRowIndex < 0 || headerRowIndex + 2 >= jsonData.length) {
-          alert("Could not locate a valid header row in Zenith data.");
-          return;
-        }
-        let headers = jsonData[headerRowIndex];
-        let dataRows = jsonData.slice(headerRowIndex + 2);
-        let processed = [headers].concat(dataRows);
-        document.getElementById('excelData').value = processed.map(r => r.join('\t')).join('\n');
-        generateChart();
-      }
-  
-      window.generateChart = function () {
-        document.getElementById('loadingSpinner').style.display = 'block';
-        const excelData = document.getElementById('excelData').value.trim();
-        if (!excelData) {
-          alert('Please paste or upload data.');
-          return;
-        }
-        const rows = excelData.split('\n').map(row => row.split('\t'));
-        if (rows.length < 2 || rows[0].length < 2) {
-          alert('Invalid data format.');
-          return;
-        }
-        allLabels = rows.slice(1).map(row => row[0] || 'N/A');
-        allDatasets = [];
-        activeDatasets = [];
-  
-        const checkboxContainer = document.getElementById('checkboxContainer');
-        checkboxContainer.innerHTML = '';
-        checkboxContainer.style.display = 'flex';
-        for (let i = 1; i < rows[0].length; i++) {
-          const data = rows.slice(1).map(row => parseFloat((row[i] || "").replace(/,/g, "")) || null);
-          const dataset = {
-            label: rows[0][i] || `Dataset ${i}`,
-            data: data,
-            borderColor: colorPalette[i % colorPalette.length],
-            backgroundColor: colorPalette[i % colorPalette.length],
-            borderWidth: 2,
-            fill: false,
-            pointRadius: 0,
-            pointBackgroundColor: colorPalette[i % colorPalette.length],
-            yAxisID: `y${Math.ceil(i / 2)}`
-          };
-          allDatasets.push(dataset);
-          activeDatasets.push(dataset);
-  
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.checked = true;
-          checkbox.onchange = () => {
-            if (checkbox.checked) {
-              activeDatasets.push(dataset);
-            } else {
-              activeDatasets = activeDatasets.filter(ds => ds.label !== dataset.label);
-            }
-            updateChart();
-          };
-  
-          const label = document.createElement('label');
-          label.appendChild(checkbox);
-          label.appendChild(document.createTextNode(` ${dataset.label}`));
-          checkboxContainer.appendChild(label);
-        }
-  
-        const startSlider = document.getElementById('startSlider');
-        const endSlider = document.getElementById('endSlider');
-        startSlider.max = allLabels.length - 1;
-        endSlider.max = allLabels.length - 1;
-        endSlider.value = allLabels.length - 1;
-  
-        updateChart();
-        document.getElementById('loadingSpinner').style.display = 'none';
-      };
-  
-      window.updateChart = function () {
-        const startIndex = parseInt(document.getElementById('startSlider').value, 10);
-        const endIndex = parseInt(document.getElementById('endSlider').value, 10);
-        document.getElementById('startValue').textContent = allLabels[startIndex];
-        document.getElementById('endValue').textContent = allLabels[endIndex];
-  
-        const filteredLabels = allLabels.slice(startIndex, endIndex + 1);
-        const filteredDatasets = activeDatasets.map(dataset => ({
-          ...dataset,
-          data: dataset.data.slice(startIndex, endIndex + 1)
-        }));
-  
-        if (chart) chart.destroy();
-        const ctx = document.getElementById('trendChart').getContext('2d');
-  
-        const scales = {
-          x: {
-            title: { display: true, text: 'Date/Time', color: '#000000' },
-            grid: { color: 'rgba(0, 0, 0, 0.1)' }
+    document.getElementById('fileInput').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const dataType = document.getElementById('dataTypeSelect').value.toLowerCase();
+      const reader = new FileReader();
+      if (file.name.endsWith('.csv')) {
+        reader.onload = function (e) {
+          const csvData = e.target.result;
+          if (dataType === "scada") {
+            processScadaCSVData(csvData);
+          } else {
+            processCSVData(csvData);
           }
         };
-  
-        for (let i = 0; i < filteredDatasets.length; i += 2) {
-          const yAxisID = `y${Math.floor(i / 2) + 1}`;
-          const dataset1Name = filteredDatasets[i].label;
-          const dataset2Name = filteredDatasets[i + 1] ? filteredDatasets[i + 1].label : '';
-          const yAxisLabel = dataset2Name ? `${dataset1Name} | ${dataset2Name}` : dataset1Name;
-          const allData = [...filteredDatasets[i].data, ...(filteredDatasets[i + 1] ? filteredDatasets[i + 1].data : [])];
-          const minDataValue = Math.min(...allData);
-          const maxDataValue = Math.max(...allData);
-          const roundUp = (value) => {
-            const power = Math.pow(10, Math.floor(Math.log10(value)));
-            return Math.ceil(value / power) * power;
-          };
-          const roundDown = (value) => {
-            const power = Math.pow(10, Math.floor(Math.log10(value)));
-            return Math.floor(value / power) * power;
-          };
-          const roundedMin = roundDown(minDataValue - (maxDataValue - minDataValue) * 0.05);
-          const roundedMax = roundUp(maxDataValue + (maxDataValue - minDataValue) * 0.05);
-          scales[yAxisID] = {
-            type: 'linear',
-            display: true,
-            position: i % 4 === 0 ? 'left' : 'right',
-            title: { display: true, text: yAxisLabel, color: '#000000' },
-            grid: { color: 'rgba(0, 0, 0, 0.1)' },
-            min: roundedMin,
-            max: roundedMax
-          };
-          filteredDatasets[i].yAxisID = yAxisID;
-          if (filteredDatasets[i + 1]) {
-            filteredDatasets[i + 1].yAxisID = yAxisID;
-          }
-        }
-  
-        chart = new Chart(ctx, {
-          type: 'line',
-          data: { labels: filteredLabels, datasets: filteredDatasets },
-          options: {
-            responsive: true,
-            scales: scales,
-            plugins: {
-              legend: {
-                display: true,
-                labels: {
-                  color: '#000000',
-                  usePointStyle: true,
-                  pointStyle: 'circle'
-                }
-              },
-              annotation: { annotations: {} }
-            },
-            onClick: (event) => handleChartClick(event),
-            backgroundColor: '#ffffff'
-          }
-        });
-      };
-  
-      function handleChartClick(event) {
-        const points = chart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
-        if (!points.length) return;
-        const point = points[0];
-        const x = point.element.x;
-        const y = point.element.y;
-        const canvas = document.getElementById('trendChart');
-        const canvasRect = canvas.getBoundingClientRect();
-        const containerRect = chartContainer.getBoundingClientRect();
-        const offsetX = canvasRect.left - containerRect.left;
-        const offsetY = canvasRect.top - containerRect.top;
-        const clickedX = offsetX + x;
-        const clickedY = offsetY + y;
-        const xValue = chart.data.labels[point.index];
-        const yValue = point.element.$context.raw;
-        const dataset = chart.data.datasets[point.datasetIndex];
-        const defaultText = `<span style="color:#000; font-weight:bold;">Date/Time:</span> <span style="color:#000;">${xValue}</span><br/><span style="color:#000; font-weight:bold;">${dataset.label}:</span> <span style="color:#000;">${yValue}</span>`;
-        createCalloutBubble(clickedX, clickedY, defaultText, point.datasetIndex, point.index);
-      }
-  
-      window.exportChartAsImage = function () {
-        html2canvas(document.querySelector('#trendPage .chart-container'), { backgroundColor: "#ffffff" }).then(function(canvas) {
-          const link = document.createElement('a');
-          link.href = canvas.toDataURL("image/png");
-          link.download = 'chart_with_callouts.png';
-          link.click();
-        });
-      };
-  
-      window.exportChartAsPDF = function () {
-        html2canvas(document.querySelector('#trendPage .chart-container'), { backgroundColor: "#ffffff" }).then(function(canvas) {
-          const imgData = canvas.toDataURL("image/png");
-          const pdf = new jspdf.jsPDF();
-          pdf.addImage(imgData, 'PNG', 10, 10, 180, 100);
-          pdf.save('chart_with_callouts.pdf');
-        });
-      };
-  
-      window.shareChart = async function () {
-        try {
-          const container = document.querySelector('#trendPage .chart-container');
-          const canvas = await html2canvas(container, { backgroundColor: "#ffffff" });
-          canvas.toBlob(async (blob) => {
-            const file = new File([blob], "chart.png", { type: "image/png" });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-              await navigator.share({
-                title: "Trend Chart",
-                text: "Check out this trend chart from ESP Solutions!",
-                files: [file]
-              });
-            } else {
-              alert("Sharing files is not supported on this browser. Here's the chart image as data URL:\n" + canvas.toDataURL());
-            }
-          }, "image/png");
-        } catch (error) {
-          console.error("Error capturing chart:", error);
-          alert("Failed to share chart image.");
-        }
-      };
-  
-      window.clearData = function () {
-        document.getElementById('loadingSpinner').style.display = 'none';
-        document.getElementById('fileInput').value = "";
-        document.getElementById('excelData').value = "";
-        const checkboxContainer = document.getElementById('checkboxContainer');
-        checkboxContainer.innerHTML = "";
-        checkboxContainer.style.display = "none";
-        const startSlider = document.getElementById('startSlider');
-        const endSlider = document.getElementById('endSlider');
-        startSlider.value = 0;
-        endSlider.value = 0;
-        startSlider.max = 0;
-        endSlider.max = 0;
-        document.getElementById('startValue').textContent = "";
-        document.getElementById('endValue').textContent = "";
-        allLabels = [];
-        allDatasets = [];
-        activeDatasets = [];
-        if (chart) {
-          chart.destroy();
-          chart = null;
-        }
-        const canvas = document.getElementById('trendChart');
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        canvas.width = canvas.width;
-      };
-  
-      function createCalloutBubble(clickedX, clickedY, content, datasetIndex, pointIndex) {
-        const bubbleWidth = 150;
-        const bubbleHeight = 100;
-        const bubbleLeft = clickedX - bubbleWidth / 2;
-        const bubbleTop = clickedY - bubbleHeight - 10;
-  
-        const bubble = document.createElement('div');
-        bubble.classList.add('callout');
-        bubble.style.backgroundColor = "#ffffff";
-        bubble.style.width = bubbleWidth + 'px';
-        bubble.style.height = bubbleHeight + 'px';
-        bubble.style.left = bubbleLeft + 'px';
-        bubble.style.top = bubbleTop + 'px';
-  
-        const dragHandle = document.createElement('div');
-        dragHandle.classList.add('callout-drag-handle');
-        bubble.appendChild(dragHandle);
-  
-        const deleteBtn = document.createElement('button');
-        deleteBtn.classList.add('callout-delete');
-        deleteBtn.innerText = '×';
-        bubble.appendChild(deleteBtn);
-  
-        const contentArea = document.createElement('div');
-        contentArea.classList.add('callout-content');
-        contentArea.contentEditable = true;
-        contentArea.innerHTML = content;
-        contentArea.style.fontSize = "12px";
-        bubble.appendChild(contentArea);
-  
-        const resizeHandle = document.createElement('div');
-        resizeHandle.classList.add('callout-resize-handle');
-        bubble.appendChild(resizeHandle);
-  
-        chartContainer.appendChild(bubble);
-  
-        const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-        poly.setAttribute("fill", "#ffffff");
-        poly.setAttribute("stroke", "#666");
-        poly.setAttribute("stroke-width", "1");
-        tailSVG.appendChild(poly);
-        bubble.tailPoly = poly;
-  
-        bubble.clickedX = clickedX;
-        bubble.clickedY = clickedY;
-        bubble.datasetIndex = datasetIndex;
-        bubble.pointIndex = pointIndex;
-        updateTail(bubble);
-  
-        deleteBtn.addEventListener('click', function (e) {
-          chartContainer.removeChild(bubble);
-          tailSVG.removeChild(bubble.tailPoly);
-          e.stopPropagation();
-        });
-  
-        makeElementDraggable(bubble, dragHandle);
-        makeElementResizable(bubble, resizeHandle);
-      }
-  
-      function makeElementDraggable(el, handle) {
-        let offsetX, offsetY;
-        handle.addEventListener('mousedown', mouseDownHandler);
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
-        handle.addEventListener('touchstart', touchStartHandler, { passive: false });
-        document.addEventListener('touchmove', touchMoveHandler, { passive: false });
-        document.addEventListener('touchend', touchEndHandler);
-  
-        function mouseDownHandler(e) {
-          e.preventDefault();
-          offsetX = e.clientX - el.getBoundingClientRect().left;
-          offsetY = e.clientY - el.getBoundingClientRect().top;
-          document.addEventListener('mousemove', mouseMoveHandler);
-          document.addEventListener('mouseup', mouseUpHandler);
-        }
-  
-        function mouseMoveHandler(e) {
-          e.preventDefault();
-          const containerRect = chartContainer.getBoundingClientRect();
-          el.style.left = (e.clientX - containerRect.left - offsetX) + 'px';
-          el.style.top = (e.clientY - containerRect.top - offsetY) + 'px';
-          updateTail(el);
-        }
-  
-        function mouseUpHandler() {
-          document.removeEventListener('mousemove', mouseMoveHandler);
-          document.removeEventListener('mouseup', mouseUpHandler);
-        }
-  
-        function touchStartHandler(e) {
-          e.preventDefault();
-          const touch = e.touches[0];
-          offsetX = touch.clientX - el.getBoundingClientRect().left;
-          offsetY = touch.clientY - el.getBoundingClientRect().top;
-          document.addEventListener('touchmove', touchMoveHandler, { passive: false });
-          document.addEventListener('touchend', touchEndHandler);
-        }
-  
-        function touchMoveHandler(e) {
-          e.preventDefault();
-          const touch = e.touches[0];
-          const containerRect = chartContainer.getBoundingClientRect();
-          el.style.left = (touch.clientX - containerRect.left - offsetX) + 'px';
-          el.style.top = (touch.clientY - containerRect.top - offsetY) + 'px';
-          updateTail(el);
-        }
-  
-        function touchEndHandler() {
-          document.removeEventListener('touchmove', touchMoveHandler);
-          document.removeEventListener('touchend', touchEndHandler);
-        }
-      }
-  
-      function makeElementResizable(el, handle) {
-        let startX, startY, startWidth, startHeight;
-        const contentArea = el.querySelector('.callout-content');
-        if (contentArea) {
-          contentArea.dataset.originalFontSize = "12";
-        }
-  
-        handle.addEventListener('mousedown', mouseDownHandler);
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
-        handle.addEventListener('touchstart', touchStartHandler, { passive: false });
-        document.addEventListener('touchmove', touchMoveHandler, { passive: false });
-        document.addEventListener('touchend', touchEndHandler);
-  
-        function mouseDownHandler(e) {
-          e.stopPropagation();
-          startX = e.clientX;
-          startY = e.clientY;
-          startWidth = parseInt(document.defaultView.getComputedStyle(el).width, 10);
-          startHeight = parseInt(document.defaultView.getComputedStyle(el).height, 10);
-          document.addEventListener('mousemove', mouseMoveHandler);
-          document.addEventListener('mouseup', mouseUpHandler);
-        }
-  
-        function mouseMoveHandler(e) {
-          e.preventDefault();
-          const newWidth = startWidth + (e.clientX - startX);
-          const newHeight = startHeight + (e.clientY - startY);
-  
-          el.style.width = newWidth + 'px';
-          el.style.height = newHeight + 'px';
-  
-          adjustFontSize(el, newWidth, newHeight);
-  
-          updateTail(el);
-        }
-  
-        function mouseUpHandler() {
-          document.removeEventListener('mousemove', mouseMoveHandler);
-          document.removeEventListener('mouseup', mouseUpHandler);
-        }
-  
-        function touchStartHandler(e) {
-          e.preventDefault();
-          const touch = e.touches[0];
-          startX = touch.clientX;
-          startY = touch.clientY;
-          startWidth = parseInt(document.defaultView.getComputedStyle(el).width, 10);
-          startHeight = parseInt(document.defaultView.getComputedStyle(el).height, 10);
-          document.addEventListener('touchmove', touchMoveHandler, { passive: false });
-          document.addEventListener('touchend', touchEndHandler);
-        }
-  
-        function touchMoveHandler(e) {
-          e.preventDefault();
-          const touch = e.touches[0];
-          const newWidth = startWidth + (touch.clientX - startX);
-          const newHeight = startHeight + (touch.clientY - startY);
-  
-          el.style.width = newWidth + 'px';
-          el.style.height = newHeight + 'px';
-  
-          adjustFontSize(el, newWidth, newHeight);
-  
-          updateTail(el);
-        }
-  
-        function touchEndHandler() {
-          document.removeEventListener('touchmove', touchMoveHandler);
-          document.removeEventListener('touchend', touchEndHandler);
-        }
-  
-        function adjustFontSize(el, width, height) {
-          const contentArea = el.querySelector('.callout-content');
-          if (!contentArea) return;
-          const originalFontSize = parseFloat(contentArea.dataset.originalFontSize);
-          const scaleFactor = Math.min(width / 150, height / 100);
-          contentArea.style.fontSize = Math.max(5, Math.min(12, originalFontSize * scaleFactor)) + "px";
-        }
-      }
-    });
-  
-    // BH VSD options: Show/hide extra options based on selected data type
-    document.getElementById('dataTypeSelect').addEventListener('change', function() {
-      const dataType = this.value;
-      const bhOptions = document.getElementById('bhvsdOptions');
-      if (dataType === 'bhvsd') {
-        bhOptions.style.display = 'flex';
+        reader.readAsText(file);
       } else {
-        bhOptions.style.display = 'none';
+        reader.onload = function (e) {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          if (dataType === "scada") {
+            processScadaExcelData(workbook);
+          } else {
+            let jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+            if (jsonData.length === 0) {
+              alert("Invalid Excel file. Please upload a valid Excel sheet.");
+              return;
+            }
+            let startIndex = -1;
+            for (let i = 0; i < jsonData.length; i++) {
+              if (!isNaN(jsonData[i][0]) && jsonData[i][1] !== undefined) {
+                startIndex = i - 1;
+                break;
+              }
+            }
+            if (startIndex < 0) {
+              alert("No valid date/time found in the first column.");
+              return;
+            }
+            jsonData = jsonData.slice(startIndex);
+            jsonData.forEach((row, index) => {
+              if (index > 0 && !isNaN(row[0])) {
+                row[0] = excelDateToJSDate(row[0]);
+              }
+            });
+            document.getElementById('excelData').value = jsonData.map(row => row.join('\t')).join('\n');
+            generateChart();
+          }
+        };
+        reader.readAsArrayBuffer(file);
       }
     });
   
-    // Refresh BH VSD processing with new TR value
-    function refreshBHvsd() {
-      const trValue = parseFloat(document.getElementById('trValue').value);
-      if (!trValue || trValue <= 0) {
-        alert("Please enter a valid TR value.");
+    function processCSVData(csvData) {
+      const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
+        .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
+          .map(cell => cell.replace(/^"|"$/g, "").trim()));
+      if (rows.length < 2) {
+        alert("Invalid CSV file format.");
         return;
       }
-      if (window.originalBHvsdCSVData) {
-        processBHvsdCSVData(window.originalBHvsdCSVData);
-      } else if (window.originalBHvsdExcelData) {
-        processBHvsdExcelData(window.originalBHvsdExcelData);
+      const processedRows = rows.map(row => row.join('\t'));
+      const processedData = processedRows.join('\n');
+      document.getElementById('excelData').value = processedData;
+      generateChart();
+    }
+  
+    function processScadaCSVData(csvData) {
+      const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
+        .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
+          .map(cell => cell.replace(/^"|"$/g, "").trim()));
+      if (rows.length < 1) {
+        alert("Invalid CSV file format.");
+        return;
+      }
+      const scadaColumns = [0, 19, 20, 21, 22, 3, 5, 10, 15];
+      const scadaHeaders = ["Date/Time", "Pi", "Pd", "Ti", "Tm", "WHP", "FLP", "Amps", "Freq"];
+      const processedRows = rows.map((row, rowIndex) => {
+        let newRow = [];
+        scadaColumns.forEach((colIndex) => {
+          newRow.push(row[colIndex] !== undefined ? row[colIndex] : "");
+        });
+        if (rowIndex === 0) {
+          newRow = scadaHeaders;
+        }
+        return newRow;
+      });
+      const processedData = processedRows.map(row => row.join('\t')).join('\n');
+      document.getElementById('excelData').value = processedData;
+      generateChart();
+    }
+  
+    function processScadaExcelData(workbook) {
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      let jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
+      if (jsonData.length < 1) {
+        alert("Invalid Excel file.");
+        return;
+      }
+      const scadaColumns = [0, 19, 20, 21, 22, 3, 5, 10, 15];
+      const scadaHeaders = ["Date/Time", "Pi", "Pd", "Ti", "Tm", "WHP", "FLP", "Amps", "Freq"];
+      const processedRows = jsonData.map((row, rowIndex) => {
+        let newRow = [];
+        scadaColumns.forEach((colIndex) => {
+          newRow.push(row[colIndex] !== undefined ? row[colIndex] : "");
+        });
+        if (rowIndex === 0) {
+          newRow = scadaHeaders;
+        }
+        return newRow;
+      });
+      const processedData = processedRows.map(row => row.join('\t')).join('\n');
+      document.getElementById('excelData').value = processedData;
+      generateChart();
+    }
+  
+    // ----------------------------
+    // Modified generateChart & updateChart to preserve pair ranges and use dynamic y-axis titles
+    // ----------------------------
+  
+    window.generateChart = function () {
+      document.getElementById('loadingSpinner').style.display = 'block';
+      const excelData = document.getElementById('excelData').value.trim();
+      if (!excelData) {
+        alert('Please paste or upload data.');
+        return;
+      }
+      const rows = excelData.split('\n').map(row => row.split('\t'));
+      if (rows.length < 2 || rows[0].length < 2) {
+        alert('Invalid data format.');
+        return;
+      }
+      allLabels = rows.slice(1).map(row => row[0] || 'N/A');
+      allDatasets = [];
+      const checkboxContainer = document.getElementById('checkboxContainer');
+      checkboxContainer.innerHTML = '';
+      checkboxContainer.style.display = 'flex';
+      for (let i = 1; i < rows[0].length; i++) {
+        const data = rows.slice(1).map(row => parseFloat((row[i] || "").replace(/,/g, "")) || null);
+        const dataset = {
+          label: rows[0][i] || `Dataset ${i}`,
+          data: data,
+          borderColor: colorPalette[i % colorPalette.length],
+          backgroundColor: colorPalette[i % colorPalette.length],
+          borderWidth: 2,
+          fill: false,
+          pointRadius: 0,
+          pointBackgroundColor: colorPalette[i % colorPalette.length],
+          pairIndex: Math.floor((i - 1) / 2),
+          active: true,
+          yAxisID: `y${Math.ceil(i / 2)}`
+        };
+        allDatasets.push(dataset);
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = true;
+        checkbox.onchange = () => {
+          dataset.active = checkbox.checked;
+          updateChart();
+        };
+        const labelElem = document.createElement('label');
+        labelElem.appendChild(checkbox);
+        labelElem.appendChild(document.createTextNode(` ${dataset.label}`));
+        checkboxContainer.appendChild(labelElem);
+      }
+      const startSlider = document.getElementById('startSlider');
+      const endSlider = document.getElementById('endSlider');
+      startSlider.max = allLabels.length - 1;
+      endSlider.max = allLabels.length - 1;
+      endSlider.value = allLabels.length - 1;
+      updateChart();
+      document.getElementById('loadingSpinner').style.display = 'none';
+    };
+  
+    window.updateChart = function () {
+      const startIndex = parseInt(document.getElementById('startSlider').value, 10);
+      const endIndex = parseInt(document.getElementById('endSlider').value, 10);
+      document.getElementById('startValue').textContent = allLabels[startIndex];
+      document.getElementById('endValue').textContent = allLabels[endIndex];
+      const filteredLabels = allLabels.slice(startIndex, endIndex + 1);
+      const activeDatasets = allDatasets.filter(ds => ds.active);
+      const pairs = {};
+      activeDatasets.forEach(ds => {
+        const pair = ds.pairIndex;
+        if (!pairs[pair]) pairs[pair] = [];
+        let newDs = Object.assign({}, ds);
+        newDs.data = ds.data.slice(startIndex, endIndex + 1);
+        pairs[pair].push(newDs);
+      });
+      let filteredDatasets = [];
+      let scales = {
+        x: {
+          title: { display: true, text: 'Date/Time', color: '#000000' },
+          grid: { color: 'rgba(0, 0, 0, 0.1)' }
+        }
+      };
+      const totalPairs = Math.ceil((document.getElementById('excelData').value.split('\n')[0].split('\t').length - 1) / 2);
+      const roundUp = (value) => {
+        const power = Math.pow(10, Math.floor(Math.log10(value)));
+        return Math.ceil(value / power) * power;
+      };
+      const roundDown = (value) => {
+        const power = Math.pow(10, Math.floor(Math.log10(value)));
+        return Math.floor(value / power) * power;
+      };
+      for (let j = 0; j < totalPairs; j++) {
+        if (pairs[j] && pairs[j].length > 0) {
+          let combinedData = [];
+          pairs[j].forEach(ds => {
+            combinedData = combinedData.concat(ds.data.filter(val => val !== null));
+          });
+          let yAxisTitle = pairs[j].map(ds => ds.label).join(' | ');
+          if (combinedData.length > 0) {
+            const minDataValue = Math.min(...combinedData);
+            const maxDataValue = Math.max(...combinedData);
+            const margin = (maxDataValue - minDataValue) * 0.05;
+            const roundedMin = roundDown(minDataValue - margin);
+            const roundedMax = roundUp(maxDataValue + margin);
+            scales["y" + (j + 1)] = {
+              type: 'linear',
+              display: true,
+              position: j % 2 === 0 ? 'left' : 'right',
+              title: { display: true, text: yAxisTitle, color: '#000000' },
+              grid: { color: 'rgba(0, 0, 0, 0.1)' },
+              min: roundedMin,
+              max: roundedMax
+            };
+          } else {
+            scales["y" + (j + 1)] = {
+              type: 'linear',
+              display: true,
+              position: j % 2 === 0 ? 'left' : 'right',
+              title: { display: true, text: yAxisTitle, color: '#000000' },
+              grid: { color: 'rgba(0, 0, 0, 0.1)' }
+            };
+          }
+          pairs[j].forEach(ds => {
+            ds.yAxisID = "y" + (j + 1);
+          });
+          filteredDatasets.push(...pairs[j]);
+        }
+      }
+      if (chart) chart.destroy();
+      const ctx = document.getElementById('trendChart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: filteredLabels, datasets: filteredDatasets },
+        options: {
+          responsive: true,
+          scales: scales,
+          plugins: {
+            legend: {
+              display: true,
+              labels: {
+                color: '#000000',
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            annotation: { annotations: {} }
+          },
+          onClick: (event) => handleChartClick(event),
+          backgroundColor: '#ffffff'
+        }
+      });
+    };
+  
+    function handleChartClick(event) {
+      const points = chart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
+      if (!points.length) return;
+      const point = points[0];
+      const x = point.element.x;
+      const y = point.element.y;
+      const canvas = document.getElementById('trendChart');
+      const canvasRect = canvas.getBoundingClientRect();
+      const containerRect = chartContainer.getBoundingClientRect();
+      const offsetX = canvasRect.left - containerRect.left;
+      const offsetY = canvasRect.top - containerRect.top;
+      const clickedX = offsetX + x;
+      const clickedY = offsetY + y;
+      const xValue = chart.data.labels[point.index];
+      const yValue = point.element.$context.raw;
+      const dataset = chart.data.datasets[point.datasetIndex];
+      const defaultText = `<span style="color:#000; font-weight:bold;">Date/Time:</span> <span style="color:#000;">${xValue}</span><br/><span style="color:#000; font-weight:bold;">${dataset.label}:</span> <span style="color:#000;">${yValue}</span>`;
+      createCalloutBubble(clickedX, clickedY, defaultText, point.datasetIndex, point.index);
+    }
+  
+    window.exportChartAsImage = function () {
+      html2canvas(document.querySelector('#trendPage .chart-container'), { backgroundColor: "#ffffff" }).then(function(canvas) {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL("image/png");
+        link.download = 'chart_with_callouts.png';
+        link.click();
+      });
+    };
+  
+    window.exportChartAsPDF = function () {
+      html2canvas(document.querySelector('#trendPage .chart-container'), { backgroundColor: "#ffffff" }).then(function(canvas) {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jspdf.jsPDF();
+        pdf.addImage(imgData, 'PNG', 10, 10, 180, 100);
+        pdf.save('chart_with_callouts.pdf');
+      });
+    };
+  
+    window.shareChart = async function () {
+      try {
+        const container = document.querySelector('#trendPage .chart-container');
+        const canvas = await html2canvas(container, { backgroundColor: "#ffffff" });
+        canvas.toBlob(async (blob) => {
+          const file = new File([blob], "chart.png", { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: "Trend Chart",
+              text: "Check out this trend chart from ESP Solutions!",
+              files: [file]
+            });
+          } else {
+            alert("Sharing files is not supported on this browser. Here's the chart image as data URL:\n" + canvas.toDataURL());
+          }
+        }, "image/png");
+      } catch (error) {
+        console.error("Error capturing chart:", error);
+        alert("Failed to share chart image.");
+      }
+    };
+  
+    window.clearData = function () {
+      document.getElementById('loadingSpinner').style.display = 'none';
+      document.getElementById('fileInput').value = "";
+      document.getElementById('excelData').value = "";
+      const checkboxContainer = document.getElementById('checkboxContainer');
+      checkboxContainer.innerHTML = "";
+      checkboxContainer.style.display = "none";
+      const startSlider = document.getElementById('startSlider');
+      const endSlider = document.getElementById('endSlider');
+      startSlider.value = 0;
+      endSlider.value = 0;
+      startSlider.max = 0;
+      endSlider.max = 0;
+      document.getElementById('startValue').textContent = "";
+      document.getElementById('endValue').textContent = "";
+      allLabels = [];
+      allDatasets = [];
+      if (chart) {
+        chart.destroy();
+        chart = null;
+      }
+      const canvas = document.getElementById('trendChart');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      canvas.width = canvas.width;
+    };
+  
+    function createCalloutBubble(clickedX, clickedY, content, datasetIndex, pointIndex) {
+      const bubbleWidth = 150;
+      const bubbleHeight = 100;
+      const bubbleLeft = clickedX - bubbleWidth / 2;
+      const bubbleTop = clickedY - bubbleHeight - 10;
+      const bubble = document.createElement('div');
+      bubble.classList.add('callout');
+      bubble.style.backgroundColor = "#ffffff";
+      bubble.style.width = bubbleWidth + 'px';
+      bubble.style.height = bubbleHeight + 'px';
+      bubble.style.left = bubbleLeft + 'px';
+      bubble.style.top = bubbleTop + 'px';
+      const dragHandle = document.createElement('div');
+      dragHandle.classList.add('callout-drag-handle');
+      bubble.appendChild(dragHandle);
+      const deleteBtn = document.createElement('button');
+      deleteBtn.classList.add('callout-delete');
+      deleteBtn.innerText = '×';
+      bubble.appendChild(deleteBtn);
+      const contentArea = document.createElement('div');
+      contentArea.classList.add('callout-content');
+      contentArea.style.backgroundColor = "#ffffff";
+      contentArea.contentEditable = true;
+      contentArea.innerHTML = content;
+      contentArea.style.fontSize = "12px";
+      bubble.appendChild(contentArea);
+      const resizeHandle = document.createElement('div');
+      resizeHandle.classList.add('callout-resize-handle');
+      bubble.appendChild(resizeHandle);
+      chartContainer.appendChild(bubble);
+      const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+      poly.setAttribute("fill", "#ffffff");
+      poly.setAttribute("stroke", "#666");
+      poly.setAttribute("stroke-width", "1");
+      tailSVG.appendChild(poly);
+      bubble.tailPoly = poly;
+      bubble.clickedX = clickedX;
+      bubble.clickedY = clickedY;
+      bubble.datasetIndex = datasetIndex;
+      bubble.pointIndex = pointIndex;
+      updateTail(bubble);
+      deleteBtn.addEventListener('click', function (e) {
+        chartContainer.removeChild(bubble);
+        tailSVG.removeChild(bubble.tailPoly);
+        e.stopPropagation();
+      });
+      makeElementDraggable(bubble, dragHandle);
+      makeElementResizable(bubble, resizeHandle);
+    }
+  
+    function updateTail(bubble) {
+      if (!bubble.tailPoly) return;
+      const containerRect = chartContainer.getBoundingClientRect();
+      const bubbleRect = bubble.getBoundingClientRect();
+      const baseWidth = 20;
+      const baseCenterX = bubbleRect.left + bubbleRect.width / 2;
+      const baseCenterY = bubbleRect.bottom;
+      const baseLeftX = baseCenterX - baseWidth / 2;
+      const baseLeftY = baseCenterY;
+      const baseRightX = baseCenterX + baseWidth / 2;
+      const baseRightY = baseCenterY;
+      const tipX = bubble.clickedX;
+      const tipY = bubble.clickedY;
+      const p1 = `${baseLeftX - containerRect.left},${baseLeftY - containerRect.top}`;
+      const p2 = `${baseRightX - containerRect.left},${baseRightY - containerRect.top}`;
+      const p3 = `${tipX},${tipY}`;
+      const points = `${p1} ${p2} ${p3}`;
+      bubble.tailPoly.setAttribute('points', points);
+    }
+  
+    function makeElementDraggable(el, handle) {
+      let offsetX, offsetY;
+      handle.addEventListener('mousedown', mouseDownHandler);
+      document.addEventListener('mousemove', mouseMoveHandler);
+      document.addEventListener('mouseup', mouseUpHandler);
+      handle.addEventListener('touchstart', touchStartHandler, { passive: false });
+      document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+      document.addEventListener('touchend', touchEndHandler);
+  
+      function mouseDownHandler(e) {
+        e.preventDefault();
+        offsetX = e.clientX - el.getBoundingClientRect().left;
+        offsetY = e.clientY - el.getBoundingClientRect().top;
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+      }
+  
+      function mouseMoveHandler(e) {
+        e.preventDefault();
+        const containerRect = chartContainer.getBoundingClientRect();
+        el.style.left = (e.clientX - containerRect.left - offsetX) + 'px';
+        el.style.top = (e.clientY - containerRect.top - offsetY) + 'px';
+        updateTail(el);
+      }
+  
+      function mouseUpHandler() {
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+      }
+  
+      function touchStartHandler(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        offsetX = touch.clientX - el.getBoundingClientRect().left;
+        offsetY = touch.clientY - el.getBoundingClientRect().top;
+        document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+        document.addEventListener('touchend', touchEndHandler);
+      }
+  
+      function touchMoveHandler(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const containerRect = chartContainer.getBoundingClientRect();
+        el.style.left = (touch.clientX - containerRect.left - offsetX) + 'px';
+        el.style.top = (touch.clientY - containerRect.top - offsetY) + 'px';
+        updateTail(el);
+      }
+  
+      function touchEndHandler() {
+        document.removeEventListener('touchmove', touchMoveHandler);
+        document.removeEventListener('touchend', touchEndHandler);
+      }
+    }
+  
+    function makeElementResizable(el, handle) {
+      let startX, startY, startWidth, startHeight;
+      const minFontSize = 5;
+      const maxFontSize = 12;
+      const contentArea = el.querySelector('.callout-content');
+      if (contentArea) {
+        contentArea.dataset.originalFontSize = maxFontSize;
+      }
+      handle.addEventListener('mousedown', mouseDownHandler);
+      document.addEventListener('mousemove', mouseMoveHandler);
+      document.addEventListener('mouseup', mouseUpHandler);
+      handle.addEventListener('touchstart', touchStartHandler, { passive: false });
+      document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+      document.addEventListener('touchend', touchEndHandler);
+  
+      function mouseDownHandler(e) {
+        e.stopPropagation();
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = parseInt(document.defaultView.getComputedStyle(el).width, 10);
+        startHeight = parseInt(document.defaultView.getComputedStyle(el).height, 10);
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+      }
+  
+      function mouseMoveHandler(e) {
+        e.preventDefault();
+        const newWidth = startWidth + (e.clientX - startX);
+        const newHeight = startHeight + (e.clientY - startY);
+        el.style.width = newWidth + 'px';
+        el.style.height = newHeight + 'px';
+        adjustFontSize(el, newWidth, newHeight);
+        updateTail(el);
+      }
+  
+      function mouseUpHandler() {
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+      }
+  
+      function touchStartHandler(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        startWidth = parseInt(document.defaultView.getComputedStyle(el).width, 10);
+        startHeight = parseInt(document.defaultView.getComputedStyle(el).height, 10);
+        document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+        document.addEventListener('touchend', touchEndHandler);
+      }
+  
+      function touchMoveHandler(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const newWidth = startWidth + (touch.clientX - startX);
+        const newHeight = startHeight + (touch.clientY - startY);
+        el.style.width = newWidth + 'px';
+        el.style.height = newHeight + 'px';
+        adjustFontSize(el, newWidth, newHeight);
+        updateTail(el);
+      }
+  
+      function touchEndHandler() {
+        document.removeEventListener('touchmove', touchMoveHandler);
+        document.removeEventListener('touchend', touchEndHandler);
+      }
+  
+      function adjustFontSize(el, width, height) {
+        const contentArea = el.querySelector('.callout-content');
+        if (!contentArea) return;
+        const originalFontSize = parseFloat(contentArea.dataset.originalFontSize);
+        const scaleFactor = Math.min(width / 150, height / 100);
+        contentArea.style.fontSize = Math.max(minFontSize, Math.min(maxFontSize, originalFontSize * scaleFactor)) + 'px';
       }
     }
   </script>
