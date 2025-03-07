@@ -155,6 +155,23 @@
       margin: 1rem 0;
       resize: vertical;
     }
+    /* New BH VSD Options (TR input and refresh) */
+    #bhvsdOptions {
+      display: none;
+      max-width: 400px;
+      margin: 0.5rem auto;
+    }
+    #bhvsdOptions label {
+      font-weight:600;
+      color:#fff;
+      margin-bottom: 0.25rem;
+    }
+    #bhvsdOptions input, #bhvsdOptions button {
+      font-size: 1rem;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+    }
+    
     #trendPage .controls {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -508,6 +525,7 @@
       <div class="header">
         <h1>📈 Data Visualization Dashboard</h1>
         <div class="upload-section">
+          <!-- File input and data type select -->
           <div class="file-select-container">
             <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" />
             <select id="dataTypeSelect">
@@ -516,6 +534,12 @@
               <option value="bhvsd">BH VSD</option>
               <option value="slbvsd">SLB VSD</option>
             </select>
+          </div>
+          <!-- New BH VSD options (TR input and refresh button) -->
+          <div id="bhvsdOptions">
+            <label for="trValue">TR Value:</label>
+            <input type="number" id="trValue" placeholder="Enter TR value" />
+            <button id="refreshTR" class="btn" onclick="refreshBHVSD()">&#x21bb;</button>
           </div>
           <textarea id="excelData" placeholder="Paste your data here or upload a file..."></textarea>
           <button onclick="generateChart()">Generate Chart</button>
@@ -759,7 +783,7 @@ Motor Load: ${motorLoad}`;
     }
   
     // ----------------------------
-    // Trend App Functions - UPDATED (with dynamic y-axis titles)
+    // Trend App Functions with Modifications for Zenith and BH VSD Options
     // ----------------------------
   
     let chart;
@@ -782,72 +806,7 @@ Motor Load: ${motorLoad}`;
              `${minutes.toString().padStart(2, '0')}`;
     }
   
-    document.getElementById('fileInput').addEventListener('change', function (event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const dataType = document.getElementById('dataTypeSelect').value.toLowerCase();
-      const reader = new FileReader();
-      if (file.name.endsWith('.csv')) {
-        reader.onload = function (e) {
-          const csvData = e.target.result;
-          if (dataType === "scada") {
-            processScadaCSVData(csvData);
-          } else {
-            processCSVData(csvData);
-          }
-        };
-        reader.readAsText(file);
-      } else {
-        reader.onload = function (e) {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          if (dataType === "scada") {
-            processScadaExcelData(workbook);
-          } else {
-            let jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-            if (jsonData.length === 0) {
-              alert("Invalid Excel file. Please upload a valid Excel sheet.");
-              return;
-            }
-            let startIndex = -1;
-            for (let i = 0; i < jsonData.length; i++) {
-              if (!isNaN(jsonData[i][0]) && jsonData[i][1] !== undefined) {
-                startIndex = i - 1;
-                break;
-              }
-            }
-            if (startIndex < 0) {
-              alert("No valid date/time found in the first column.");
-              return;
-            }
-            jsonData = jsonData.slice(startIndex);
-            jsonData.forEach((row, index) => {
-              if (index > 0 && !isNaN(row[0])) {
-                row[0] = excelDateToJSDate(row[0]);
-              }
-            });
-            document.getElementById('excelData').value = jsonData.map(row => row.join('\t')).join('\n');
-            generateChart();
-          }
-        };
-        reader.readAsArrayBuffer(file);
-      }
-    });
-  
-    function processCSVData(csvData) {
-      const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
-        .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
-          .map(cell => cell.replace(/^"|"$/g, "").trim()));
-      if (rows.length < 2) {
-        alert("Invalid CSV file format.");
-        return;
-      }
-      const processedRows = rows.map(row => row.join('\t'));
-      const processedData = processedRows.join('\n');
-      document.getElementById('excelData').value = processedData;
-      generateChart();
-    }
-  
+    // SCADA CSV processing function (restored)
     function processScadaCSVData(csvData) {
       const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
         .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
@@ -873,6 +832,7 @@ Motor Load: ${motorLoad}`;
       generateChart();
     }
   
+    // SCADA Excel processing function (restored)
     function processScadaExcelData(workbook) {
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       let jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
@@ -897,8 +857,152 @@ Motor Load: ${motorLoad}`;
       generateChart();
     }
   
+    // New function for processing Zenith Sensor Data
+    function processZenithData(csvData) {
+      const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
+        .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
+          .map(cell => cell.replace(/^"|"$/g, "").trim()));
+      
+      // Find the row in column A that exactly equals "Date/Time"
+      const headerRowIndex = rows.findIndex(row => row[0] === "Date/Time");
+      if (headerRowIndex === -1) {
+        alert("Date/Time header not found in Column A.");
+        return;
+      }
+      
+      // Use columns A to I (indexes 0 to 8) as headers
+      const headers = rows[headerRowIndex].slice(0, 9);
+      // Skip one row after the header row and use remaining rows as data
+      const dataRows = rows.slice(headerRowIndex + 2).map(row => row.slice(0, 9));
+      
+      const processedRows = [headers].concat(dataRows);
+      const processedData = processedRows.map(row => row.join('\t')).join('\n');
+      document.getElementById('excelData').value = processedData;
+      generateChart();
+    }
+  
+    // Global variable to store raw BH VSD data
+    window.rawBHVSDData = null;
+  
+    // New function for processing BH VSD Data
+    function processBHVSDData(csvData) {
+      window.rawBHVSDData = csvData;  // Store raw data for refresh
+      const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "")
+        .map(row => row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
+          .map(cell => cell.replace(/^"|"$/g, "").trim()));
+      
+      if (rows.length < 2) {
+        alert("Not enough data rows in the file.");
+        return;
+      }
+      
+      // Use full column A (header from first row) and create a new "Amps" header.
+      const headerA = rows[0][0] || "Column A";
+      const newHeaders = [headerA, "Amps"];
+      
+      // Process data rows starting from row index 1 (skipping only the header row)
+      const dataRows = rows.slice(1);
+      const trValueInput = document.getElementById('trValue').value;
+      const trValue = trValueInput ? parseFloat(trValueInput) : null;
+      
+      const processedDataRows = dataRows.map(row => {
+        const colA = row[0]; // full column A value
+        const valueB = parseFloat(row[1]) || 0;
+        const valueC = parseFloat(row[2]) || 0;
+        const avg = (valueB + valueC) / 2;
+        const computedAmps = trValue ? (avg / trValue) : avg;
+        return [colA, computedAmps];
+      });
+      
+      const processedRows = [newHeaders].concat(processedDataRows);
+      const processedData = processedRows.map(row => row.join('\t')).join('\n');
+      document.getElementById('excelData').value = processedData;
+      generateChart();
+    }
+  
+    // Refresh function for BH VSD recalculation with new TR value
+    function refreshBHVSD() {
+      if (window.rawBHVSDData) {
+        processBHVSDData(window.rawBHVSDData);
+      } else {
+        alert("No BH VSD data to refresh. Please upload a file first.");
+      }
+    }
+  
+    // Update file input event to call proper processing functions based on selected data type.
+    document.getElementById('fileInput').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const dataType = document.getElementById('dataTypeSelect').value.toLowerCase();
+      const reader = new FileReader();
+      
+      if (file.name.endsWith('.csv')) {
+        reader.onload = function (e) {
+          const csvData = e.target.result;
+          if (dataType === "scada") {
+            processScadaCSVData(csvData);
+          } else if (dataType === "zenith") {
+            processZenithData(csvData);
+          } else if (dataType === "bhvsd") {
+            processBHVSDData(csvData);
+          } else {
+            processCSVData(csvData);
+          }
+        };
+        reader.readAsText(file);
+      } else {
+        reader.onload = function (e) {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          if (dataType === "scada") {
+            processScadaExcelData(workbook);
+          } else if (dataType === "zenith") {
+            let jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+            let csvData = jsonData.map(row => row.join(',')).join('\n');
+            processZenithData(csvData);
+          } else if (dataType === "bhvsd") {
+            let jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+            let csvData = jsonData.map(row => row.join(',')).join('\n');
+            processBHVSDData(csvData);
+          } else {
+            let jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+            let startIndex = -1;
+            for (let i = 0; i < jsonData.length; i++) {
+              if (!isNaN(jsonData[i][0]) && jsonData[i][1] !== undefined) {
+                startIndex = i - 1;
+                break;
+              }
+            }
+            if (startIndex < 0) {
+              alert("No valid date/time found in the first column.");
+              return;
+            }
+            jsonData = jsonData.slice(startIndex);
+            jsonData.forEach((row, index) => {
+              if (index > 0 && !isNaN(row[0])) {
+                row[0] = excelDateToJSDate(row[0]);
+              }
+            });
+            document.getElementById('excelData').value = jsonData.map(row => row.join('\t')).join('\n');
+            generateChart();
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    });
+  
+    // Event listener for data type select to toggle BH VSD options
+    document.getElementById('dataTypeSelect').addEventListener('change', function() {
+      const type = this.value.toLowerCase();
+      if (type === "bhvsd") {
+        document.getElementById('bhvsdOptions').style.display = 'block';
+      } else {
+        document.getElementById('bhvsdOptions').style.display = 'none';
+      }
+    });
+  
     // ----------------------------
-    // Modified generateChart & updateChart to preserve pair ranges and use dynamic y-axis titles
+    // Chart Generation Functions
     // ----------------------------
   
     window.generateChart = function () {
@@ -1095,7 +1199,7 @@ Motor Load: ${motorLoad}`;
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
               title: "Trend Chart",
-              text: " ",
+              text: "Check out this trend chart from ESP Solutions!",
               files: [file]
             });
           } else {
