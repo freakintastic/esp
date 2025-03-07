@@ -392,9 +392,16 @@
       </table>
       <div class="calc-section">
         <button class="btn" onclick="calculateVoltageInline()">Calculate Surface Voltage</button>
+        <!-- Updated voltage results display -->
         <div class="results" id="voltageResults">
-          <p>Voltage @ 50 HZ: <span id="voltage50Hz">--</span></p>
-          <p>Voltage @ <span id="desiredFrequencyLabel">60</span> HZ: <span id="voltageDesiredHz">--</span></p>
+          <p>
+            P-P @ 50 HZ: <span id="voltage50Hz">--</span> &nbsp;&nbsp; 
+            P-G @ 50 HZ: <span id="voltage50HzPG">--</span>
+          </p>
+          <p>
+            P-P @ <span id="desiredFrequencyLabel">60</span> HZ: <span id="voltageDesiredHz">--</span> &nbsp;&nbsp; 
+            P-G @ <span id="desiredFrequencyLabel2">60</span> HZ: <span id="voltageDesiredHzPG">--</span>
+          </p>
         </div>
       </div>
       <div class="calc-section">
@@ -631,6 +638,7 @@
       return null;
     }
   
+    // Updated Voltage Calculation to include P-P and P-G values
     function calculateVoltageInline() {
       const desiredFrequency = parseFloat(document.getElementById('desiredFrequency').value);
       const voltage = parseFloat(document.getElementById('voltage').value);
@@ -643,12 +651,19 @@
       const correctionFactor = getCorrectionFactor(bht);
   
       const voltageDrop = yValue * (cableLength / 1000) * correctionFactor;
-      const voltage50Hz = voltageDrop + voltage;
-      const voltageDesiredHz = (voltage * (desiredFrequency / 50)) + voltageDrop;
+      // P-P values
+      const pp50 = voltageDrop + voltage;
+      const ppDesired = (voltage * (desiredFrequency / 50)) + voltageDrop;
+      // P-G values (P-P divided by sqrt(3))
+      const pg50 = pp50 / Math.sqrt(3);
+      const pgDesired = ppDesired / Math.sqrt(3);
   
-      document.getElementById('voltage50Hz').innerText = voltage50Hz.toFixed(2);
-      document.getElementById('voltageDesiredHz').innerText = voltageDesiredHz.toFixed(2);
+      document.getElementById('voltage50Hz').innerText = pp50.toFixed(2);
+      document.getElementById('voltage50HzPG').innerText = pg50.toFixed(2);
+      document.getElementById('voltageDesiredHz').innerText = ppDesired.toFixed(2);
+      document.getElementById('voltageDesiredHzPG').innerText = pgDesired.toFixed(2);
       document.getElementById('desiredFrequencyLabel').innerText = desiredFrequency;
+      document.getElementById('desiredFrequencyLabel2').innerText = desiredFrequency;
     }
   
     function calculateTransformerRatioInline() {
@@ -1074,40 +1089,41 @@ Motor Load: ${motorLoad}`;
         newDs.data = ds.data.slice(startIndex, endIndex + 1);
         pairs[pair].push(newDs);
       });
-      let filteredDatasets = [];
+  
       let scales = {
         x: {
           title: { display: true, text: 'Date/Time', color: '#000000' },
           grid: { color: 'rgba(0, 0, 0, 0.1)' }
         }
       };
-      const totalPairs = Math.ceil((document.getElementById('excelData').value.split('\n')[0].split('\t').length - 1) / 2);
-      const roundUp = (value) => {
-        const power = Math.pow(10, Math.floor(Math.log10(value)));
-        return Math.ceil(value / power) * power;
-      };
-      const roundDown = (value) => {
-        const power = Math.pow(10, Math.floor(Math.log10(value)));
-        return Math.floor(value / power) * power;
-      };
-      for (let j = 0; j < totalPairs; j++) {
-        if (pairs[j] && pairs[j].length > 0) {
+  
+      // Loop over active pairs only so the y-axis scales adjust based on remaining parameters
+      Object.keys(pairs).forEach(function(key) {
+        let j = parseInt(key);
+        if (pairs[key] && pairs[key].length > 0) {
           let combinedData = [];
-          pairs[j].forEach(ds => {
+          pairs[key].forEach(ds => {
             combinedData = combinedData.concat(ds.data.filter(val => val !== null));
           });
-          let yAxisTitle = pairs[j].map(ds => ds.label).join(' | ');
           if (combinedData.length > 0) {
             const minDataValue = Math.min(...combinedData);
             const maxDataValue = Math.max(...combinedData);
             const margin = (maxDataValue - minDataValue) * 0.05;
+            const roundUp = (value) => {
+              const power = Math.pow(10, Math.floor(Math.log10(value)));
+              return Math.ceil(value / power) * power;
+            };
+            const roundDown = (value) => {
+              const power = Math.pow(10, Math.floor(Math.log10(value)));
+              return Math.floor(value / power) * power;
+            };
             const roundedMin = roundDown(minDataValue - margin);
             const roundedMax = roundUp(maxDataValue + margin);
             scales["y" + (j + 1)] = {
               type: 'linear',
               display: true,
               position: j % 2 === 0 ? 'left' : 'right',
-              title: { display: true, text: yAxisTitle, color: '#000000' },
+              title: { display: true, text: pairs[key].map(ds => ds.label).join(' | '), color: '#000000' },
               grid: { color: 'rgba(0, 0, 0, 0.1)' },
               min: roundedMin,
               max: roundedMax
@@ -1117,21 +1133,18 @@ Motor Load: ${motorLoad}`;
               type: 'linear',
               display: true,
               position: j % 2 === 0 ? 'left' : 'right',
-              title: { display: true, text: yAxisTitle, color: '#000000' },
+              title: { display: true, text: pairs[key].map(ds => ds.label).join(' | '), color: '#000000' },
               grid: { color: 'rgba(0, 0, 0, 0.1)' }
             };
           }
-          pairs[j].forEach(ds => {
-            ds.yAxisID = "y" + (j + 1);
-          });
-          filteredDatasets.push(...pairs[j]);
         }
-      }
+      });
+  
       if (chart) chart.destroy();
       const ctx = document.getElementById('trendChart').getContext('2d');
       chart = new Chart(ctx, {
         type: 'line',
-        data: { labels: filteredLabels, datasets: filteredDatasets },
+        data: { labels: filteredLabels, datasets: [].concat(...Object.values(pairs)) },
         options: {
           responsive: true,
           scales: scales,
