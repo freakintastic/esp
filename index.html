@@ -172,11 +172,12 @@
       margin-top: 0.25rem;
     }
     
-   #trendPage .controls {
-  display: grid;
-  grid-template-columns: 1fr;
-  margin: 2rem 0;
-}
+    #trendPage .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin: 2rem 0;
+    }
     #trendPage .slider-container {
       background: #3a3a5a;
       padding: 1.5rem;
@@ -199,7 +200,7 @@
       -webkit-appearance: none;
     }
     @media (min-width: 1024px) {
-      #trendPage input[type="range"] { width: 100%; }
+      #trendPage input[type="range"] { width: 600px; }
     }
     #trendPage #checkboxContainer {
       display: flex;
@@ -545,7 +546,7 @@
   <div id="trendPage" class="content">
     <div class="container">
       <div class="header">
-        <h1>📈 Data Visualization </h1>
+        <h1>📈 Data Visualization Dashboard</h1>
         <div class="upload-section">
           <!-- File input and data type select -->
           <div class="file-select-container">
@@ -823,54 +824,18 @@ Motor Load: ${motorLoad}`;
     const chartContainer = document.querySelector('#trendPage .chart-container');
     const tailSVG = document.querySelector('#trendPage .tail-svg');
   
-   // This function converts an Excel serial date number to a formatted date string.
-// Excel serial numbers count days from December 30, 1899 (with an off-by-one adjustment).
-// Converts an Excel serial date to a formatted string.
-// 'serial' is the Excel date number.
-// 'format' is a string that specifies the desired format:
-// "YYYY-MM-DD HH:MM:SS", "dd-mm-yyyy HH:MM:SS", or "mm-dd-yyyy HH:MM:SS".
-function excelDateToFormattedDate(serial, format) {
-  // Excel's epoch starts on December 30, 1899.
-  const excelEpoch = new Date(1899, 11, 30);
-  
-  // Calculate the full date by converting days (serial - 1) to milliseconds.
-  const daysOffset = serial - 1;
-  const date = new Date(excelEpoch.getTime() + daysOffset * 86400000);
-  
-  // Calculate the time part from the fractional day.
-  const fractionalDay = serial % 1;
-  const hours = Math.floor(fractionalDay * 24);
-  const minutes = Math.floor((fractionalDay * 1440) % 60);
-  const seconds = Math.floor((fractionalDay * 86400) % 60);
-  
-  // Format date components with leading zeros.
-  const dd = date.getDate().toString().padStart(2, '0');
-  const mm = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed.
-  const yyyy = date.getFullYear();
-  const HH = hours.toString().padStart(2, '0');
-  const MM = minutes.toString().padStart(2, '0');
-  const SS = seconds.toString().padStart(2, '0');
-  
-  // Build the formatted date string based on the desired format.
-  switch (format) {
-    case "YYYY-MM-DD HH:MM:SS":
-      return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
-    case "dd-mm-yyyy HH:MM:SS":
-      return `${dd}-${mm}-${yyyy} ${HH}:${MM}:${SS}`;
-    case "mm-dd-yyyy HH:MM:SS":
-      return `${mm}-${dd}-${yyyy} ${HH}:${MM}:${SS}`;
-    default:
-      // If the format is unrecognized, default to ISO format.
-      return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
-  }
-}
-
-// Example usages:
-console.log(excelDateToFormattedDate(44204.75, "YYYY-MM-DD HH:MM:SS")); // e.g., "2021-01-01 18:00:00"
-console.log(excelDateToFormattedDate(44204.75, "dd-mm-yyyy HH:MM:SS")); // e.g., "01-01-2021 18:00:00"
-console.log(excelDateToFormattedDate(44204.75, "mm-dd-yyyy HH:MM:SS")); // e.g., "01-01-2021 18:00:00"
-
-
+    function excelDateToJSDate(serial) {
+      const excelEpoch = new Date(1899, 11, 30);
+      const daysOffset = serial - 1;
+      const date = new Date(excelEpoch.getTime() + daysOffset * 86400000);
+      const hours = Math.floor((serial % 1) * 24);
+      const minutes = Math.floor(((serial % 1) * 1440) % 60);
+      return `${date.getDate().toString().padStart(2, '0')}/` +
+             `${(date.getMonth() + 1).toString().padStart(2, '0')}/` +
+             `${date.getFullYear()} ` +
+             `${hours.toString().padStart(2, '0')}:` +
+             `${minutes.toString().padStart(2, '0')}`;
+    }
   
     // SCADA CSV processing function (restored)
     function processScadaCSVData(csvData) {
@@ -1504,106 +1469,6 @@ console.log(excelDateToFormattedDate(44204.75, "mm-dd-yyyy HH:MM:SS")); // e.g.,
         contentArea.style.fontSize = Math.max(minFontSize, Math.min(maxFontSize, originalFontSize * scaleFactor)) + 'px';
       }
     }
-// --- Modified Date Parsing to Preserve Seconds ---
-function parseDateInput(dateStr) {
-  // First try the native Date parser.
-  let d = new Date(dateStr);
-  if (!isNaN(d)) return d;
-  // Fallback for formats like "DD/MM/YYYY HH:MM" or "DD/MM/YYYY HH:MM:SS"
-  const parts = dateStr.split(/[\s\/:]+/);
-  if (parts.length >= 5) {
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1;
-    const year = parseInt(parts[2], 10);
-    const hours = parseInt(parts[3], 10);
-    const minutes = parseInt(parts[4], 10);
-    let seconds = 0;
-    if (parts.length >= 6) {
-      seconds = parseInt(parts[5], 10);
-    }
-    d = new Date(year, month, day, hours, minutes, seconds);
-    if (!isNaN(d)) return d;
-  }
-  return null;
-}
-
-// --- Updated Slider Update Function ---
-function updateSliderFromInput(inputElement, sliderElement) {
-  let inputDate = parseDateInput(inputElement.value);
-  if (!inputDate) {
-    alert("Invalid date format. Please use a valid date and time.");
-    // Reset input to current slider value (preserving its display)
-    inputElement.value = allLabels[parseInt(sliderElement.value, 10)];
-    return;
-  }
-  // Get the minimum and maximum dates from the imported labels.
-  const minDate = parseDateInput(allLabels[0]);
-  const maxDate = parseDateInput(allLabels[allLabels.length - 1]);
-  let outOfRange = false;
-  if (inputDate < minDate) {
-    inputDate = minDate;
-    outOfRange = true;
-  } else if (inputDate > maxDate) {
-    inputDate = maxDate;
-    outOfRange = true;
-  }
-  // Find the closest index in allLabels to the input date.
-  let closestIndex = 0;
-  let smallestDiff = Math.abs(parseDateInput(allLabels[0]) - inputDate);
-  for (let i = 1; i < allLabels.length; i++) {
-    let diff = Math.abs(parseDateInput(allLabels[i]) - inputDate);
-    if (diff < smallestDiff) {
-      smallestDiff = diff;
-      closestIndex = i;
-    }
-  }
-  // Update the slider value to match the found index.
-  sliderElement.value = closestIndex;
-  updateChart();
-  // If the input was out of range, override with the bound's exact label.
-  if (outOfRange) {
-    inputElement.value = inputDate.getTime() === minDate.getTime() ? allLabels[0] : allLabels[allLabels.length - 1];
-  }
-  // Otherwise, leave the user's typed string exactly as entered.
-}
-
-// --- Modified Function to Make the Label Editable ---
-function makeLabelEditable(labelId, sliderId) {
-  const labelElem = document.getElementById(labelId);
-  labelElem.style.cursor = 'pointer';
-  labelElem.title = "Click to edit date/time";
-  labelElem.addEventListener('click', function() {
-    // Create an input field prefilled with the current date/time exactly as shown.
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.value = labelElem.innerText;
-    input.style.width = 'auto';
-    input.style.fontSize = 'inherit';
-    // When the input loses focus, update slider and restore label.
-    input.addEventListener('blur', function() {
-      updateSliderFromInput(input, document.getElementById(sliderId));
-      labelElem.innerText = input.value; // Use exactly what was typed (or adjusted if out-of-range)
-      labelElem.style.display = 'inline';
-      input.remove();
-    });
-    // Also update on pressing Enter.
-    input.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        input.blur();
-      }
-    });
-    labelElem.style.display = 'none';
-    labelElem.parentNode.insertBefore(input, labelElem);
-    input.focus();
-  });
-}
-
-// --- Attach Editable Functionality on DOM Ready ---
-document.addEventListener('DOMContentLoaded', function() {
-  makeLabelEditable('startValue', 'startSlider');
-  makeLabelEditable('endValue', 'endSlider');
-});
-
   </script>
 </body>
 </html>
