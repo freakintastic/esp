@@ -829,11 +829,7 @@ Motor Load: ${motorLoad}`;
       const date = new Date(excelEpoch.getTime() + daysOffset * 86400000);
       const hours = Math.floor((serial % 1) * 24);
       const minutes = Math.floor(((serial % 1) * 1440) % 60);
-      return `${date.getDate().toString().padStart(2, '0')}/` +
-             `${(date.getMonth() + 1).toString().padStart(2, '0')}/` +
-             `${date.getFullYear()} ` +
-             `${hours.toString().padStart(2, '0')}:` +
-             `${minutes.toString().padStart(2, '0')}`;
+      return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     }
   
     // SCADA CSV processing function (restored)
