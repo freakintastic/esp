@@ -823,14 +823,37 @@ Motor Load: ${motorLoad}`;
     const chartContainer = document.querySelector('#trendPage .chart-container');
     const tailSVG = document.querySelector('#trendPage .tail-svg');
   
-    function excelDateToJSDate(serial) {
-      const excelEpoch = new Date(1899, 11, 30);
-      const daysOffset = serial - 1;
-      const date = new Date(excelEpoch.getTime() + daysOffset * 86400000);
-      const hours = Math.floor((serial % 1) * 24);
-      const minutes = Math.floor(((serial % 1) * 1440) % 60);
-      return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    }
+   // This function converts an Excel serial date number to a formatted date string.
+// Excel serial numbers count days from December 30, 1899 (with an off-by-one adjustment).
+function excelDateToJSDate(serial) {
+  // Set the starting date (Excel epoch) as December 30, 1899.
+  const excelEpoch = new Date(1899, 11, 30);
+  
+  // The serial number's integer part represents the number of days offset from the epoch.
+  // We subtract 1 because Excel's serial date 1 should correspond to the first day after the epoch.
+  const daysOffset = serial - 1;
+  
+  // Calculate the full date by converting days to milliseconds (1 day = 86,400,000 ms)
+  // and adding that to the epoch.
+  const date = new Date(excelEpoch.getTime() + daysOffset * 86400000);
+  
+  // The fractional part of the serial number represents the time of day.
+  // For example, 0.5 means half a day (12:00).
+  const fractionalDay = serial % 1;
+  const hours = Math.floor(fractionalDay * 24); // Convert fractional day to hours.
+  const minutes = Math.floor((fractionalDay * 1440) % 60); // Convert fractional day to minutes.
+  
+  // Format the day, month, and time parts with leading zeros if necessary.
+  const dayStr = date.getDate().toString().padStart(2, '0');
+  const monthStr = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed.
+  const yearStr = date.getFullYear();
+  const hourStr = hours.toString().padStart(2, '0');
+  const minuteStr = minutes.toString().padStart(2, '0');
+  
+  // Return the formatted string "DD/MM/YYYY HH:MM".
+  return `${dayStr}/${monthStr}/${yearStr} ${hourStr}:${minuteStr}`;
+}
+
   
     // SCADA CSV processing function (restored)
     function processScadaCSVData(csvData) {
