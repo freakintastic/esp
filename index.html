@@ -545,7 +545,7 @@
   <div id="trendPage" class="content">
     <div class="container">
       <div class="header">
-        <h1>📈 Data Visualization Dashboard</h1>
+        <h1>📈 Data Visualization </h1>
         <div class="upload-section">
           <!-- File input and data type select -->
           <div class="file-select-container">
@@ -825,34 +825,51 @@ Motor Load: ${motorLoad}`;
   
    // This function converts an Excel serial date number to a formatted date string.
 // Excel serial numbers count days from December 30, 1899 (with an off-by-one adjustment).
-function excelDateToJSDate(serial) {
-  // Set the starting date (Excel epoch) as December 30, 1899.
+// Converts an Excel serial date to a formatted string.
+// 'serial' is the Excel date number.
+// 'format' is a string that specifies the desired format:
+// "YYYY-MM-DD HH:MM:SS", "dd-mm-yyyy HH:MM:SS", or "mm-dd-yyyy HH:MM:SS".
+function excelDateToFormattedDate(serial, format) {
+  // Excel's epoch starts on December 30, 1899.
   const excelEpoch = new Date(1899, 11, 30);
   
-  // The serial number's integer part represents the number of days offset from the epoch.
-  // We subtract 1 because Excel's serial date 1 should correspond to the first day after the epoch.
+  // Calculate the full date by converting days (serial - 1) to milliseconds.
   const daysOffset = serial - 1;
-  
-  // Calculate the full date by converting days to milliseconds (1 day = 86,400,000 ms)
-  // and adding that to the epoch.
   const date = new Date(excelEpoch.getTime() + daysOffset * 86400000);
   
-  // The fractional part of the serial number represents the time of day.
-  // For example, 0.5 means half a day (12:00).
+  // Calculate the time part from the fractional day.
   const fractionalDay = serial % 1;
-  const hours = Math.floor(fractionalDay * 24); // Convert fractional day to hours.
-  const minutes = Math.floor((fractionalDay * 1440) % 60); // Convert fractional day to minutes.
+  const hours = Math.floor(fractionalDay * 24);
+  const minutes = Math.floor((fractionalDay * 1440) % 60);
+  const seconds = Math.floor((fractionalDay * 86400) % 60);
   
-  // Format the day, month, and time parts with leading zeros if necessary.
-  const dayStr = date.getDate().toString().padStart(2, '0');
-  const monthStr = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed.
-  const yearStr = date.getFullYear();
-  const hourStr = hours.toString().padStart(2, '0');
-  const minuteStr = minutes.toString().padStart(2, '0');
+  // Format date components with leading zeros.
+  const dd = date.getDate().toString().padStart(2, '0');
+  const mm = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed.
+  const yyyy = date.getFullYear();
+  const HH = hours.toString().padStart(2, '0');
+  const MM = minutes.toString().padStart(2, '0');
+  const SS = seconds.toString().padStart(2, '0');
   
-  // Return the formatted string "DD/MM/YYYY HH:MM".
-  return `${dayStr}/${monthStr}/${yearStr} ${hourStr}:${minuteStr}`;
+  // Build the formatted date string based on the desired format.
+  switch (format) {
+    case "YYYY-MM-DD HH:MM:SS":
+      return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
+    case "dd-mm-yyyy HH:MM:SS":
+      return `${dd}-${mm}-${yyyy} ${HH}:${MM}:${SS}`;
+    case "mm-dd-yyyy HH:MM:SS":
+      return `${mm}-${dd}-${yyyy} ${HH}:${MM}:${SS}`;
+    default:
+      // If the format is unrecognized, default to ISO format.
+      return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
+  }
 }
+
+// Example usages:
+console.log(excelDateToFormattedDate(44204.75, "YYYY-MM-DD HH:MM:SS")); // e.g., "2021-01-01 18:00:00"
+console.log(excelDateToFormattedDate(44204.75, "dd-mm-yyyy HH:MM:SS")); // e.g., "01-01-2021 18:00:00"
+console.log(excelDateToFormattedDate(44204.75, "mm-dd-yyyy HH:MM:SS")); // e.g., "01-01-2021 18:00:00"
+
 
   
     // SCADA CSV processing function (restored)
