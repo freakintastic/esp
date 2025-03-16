@@ -132,6 +132,7 @@
     .note-indent {
       margin-left: 20px;
     }
+    
     /* Mobile Optimization */
     @media only screen and (max-width: 600px) {
       .container {
@@ -238,7 +239,7 @@
       <div id="recommendationsContainer"></div>
       <span class="plus-btn" onclick="addRecommendation()">+ Add Recommendation</span>
     </div>
-    <!-- Attachments Section (Caption option removed) -->
+    <!-- Attachments Section (Caption removed) -->
     <div class="section">
       <h3>Attachments</h3>
       <button type="button" onclick="triggerFileInput()">Attach File</button>
@@ -255,7 +256,7 @@
   </div>
   
   <script>
-    // Utility: Convert newline characters to <br> tags.
+    // Convert newline characters to <br> tags.
     function nl2br(str) {
       return str.replace(/\n/g, "<br>");
     }
@@ -458,7 +459,7 @@
         for (let entry of attachmentsContainer.children) {
           let img = entry.querySelector("img");
           if (img) {
-            emailContent += `<img src="${img.src}" style="width:1000px; height:auto; display:block;">`;
+            emailContent += `<img src="${img.src}" style="width:1000px !important; height:auto !important; display:block;">`;
           }
         }
       }
