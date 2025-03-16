@@ -21,7 +21,7 @@
   
   <!-- ESP Solutions CSS -->
   <style>
-    /* Global resets & Baker Hughes–inspired styling */
+    /* Global resets & Baker Hughes�inspired styling */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Open Sans', sans-serif; background: #FFFFFF; color: #333; }
     header, footer {
@@ -172,12 +172,11 @@
       margin-top: 0.25rem;
     }
     
-    #trendPage .controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      margin: 2rem 0;
-    }
+   #trendPage .controls {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin: 2rem 0;
+}
     #trendPage .slider-container {
       background: #3a3a5a;
       padding: 1.5rem;
@@ -200,7 +199,7 @@
       -webkit-appearance: none;
     }
     @media (min-width: 1024px) {
-      #trendPage input[type="range"] { width: 600px; }
+      #trendPage input[type="range"] { width: 100%; }
     }
     #trendPage #checkboxContainer {
       display: flex;
@@ -272,7 +271,7 @@
       #trendPage .container { padding: 1rem; }
       #trendPage .export-buttons { flex-direction: column; }
     }
-    /* Excel‑Like Callout Styles */
+    /* Excel-Like Callout Styles */
     #trendPage .callout {
       position: absolute;
       border: 1px solid #666;
@@ -404,7 +403,7 @@
         <tr><td>Length (ft)</td><td><input type="number" id="cableLength" value=""></td></tr>
         <tr><td>Size</td><td><input type="number" id="cableSize" value=""></td></tr>
         <tr><th colspan="2">Well</th></tr>
-        <tr><td>BHT (F°)</td><td><input type="number" id="bht" value=""></td></tr>
+        <tr><td>BHT (F�)</td><td><input type="number" id="bht" value=""></td></tr>
       </table>
       <div class="calc-section">
         <button class="btn" onclick="calculateVoltageInline()">Calculate Surface Voltage</button>
@@ -546,7 +545,7 @@
   <div id="trendPage" class="content">
     <div class="container">
       <div class="header">
-        <h1>📈 Data Visualization Dashboard</h1>
+        <h1>Data Visualization Dashboard</h1>
         <div class="upload-section">
           <!-- File input and data type select -->
           <div class="file-select-container">
@@ -588,9 +587,9 @@
         <canvas id="trendChart"></canvas>
       </div>
       <div class="export-buttons">
-        <button onclick="exportChartAsImage()">📸 Export as Image</button>
-        <button onclick="exportChartAsPDF()">📄 Export as PDF</button>
-        <button onclick="shareChart()">🔗 Share</button>
+        <button onclick="exportChartAsImage()"> Export as Image</button>
+        <button onclick="exportChartAsPDF()"> Export as PDF</button>
+        <button onclick="shareChart()"> Share</button>
         <button class="nav-btn" onclick="showPage('mainPage')">Main Menu</button>
       </div>
     </div>
@@ -1287,7 +1286,7 @@ Motor Load: ${motorLoad}`;
       bubble.appendChild(dragHandle);
       const deleteBtn = document.createElement('button');
       deleteBtn.classList.add('callout-delete');
-      deleteBtn.innerText = '×';
+      deleteBtn.innerText = '�';
       bubble.appendChild(deleteBtn);
       const contentArea = document.createElement('div');
       contentArea.classList.add('callout-content');
@@ -1469,6 +1468,106 @@ Motor Load: ${motorLoad}`;
         contentArea.style.fontSize = Math.max(minFontSize, Math.min(maxFontSize, originalFontSize * scaleFactor)) + 'px';
       }
     }
+// --- Modified Date Parsing to Preserve Seconds ---
+function parseDateInput(dateStr) {
+  // First try the native Date parser.
+  let d = new Date(dateStr);
+  if (!isNaN(d)) return d;
+  // Fallback for formats like "DD/MM/YYYY HH:MM" or "DD/MM/YYYY HH:MM:SS"
+  const parts = dateStr.split(/[\s\/:]+/);
+  if (parts.length >= 5) {
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+    const hours = parseInt(parts[3], 10);
+    const minutes = parseInt(parts[4], 10);
+    let seconds = 0;
+    if (parts.length >= 6) {
+      seconds = parseInt(parts[5], 10);
+    }
+    d = new Date(year, month, day, hours, minutes, seconds);
+    if (!isNaN(d)) return d;
+  }
+  return null;
+}
+
+// --- Updated Slider Update Function ---
+function updateSliderFromInput(inputElement, sliderElement) {
+  let inputDate = parseDateInput(inputElement.value);
+  if (!inputDate) {
+    alert("Invalid date format. Please use a valid date and time.");
+    // Reset input to current slider value (preserving its display)
+    inputElement.value = allLabels[parseInt(sliderElement.value, 10)];
+    return;
+  }
+  // Get the minimum and maximum dates from the imported labels.
+  const minDate = parseDateInput(allLabels[0]);
+  const maxDate = parseDateInput(allLabels[allLabels.length - 1]);
+  let outOfRange = false;
+  if (inputDate < minDate) {
+    inputDate = minDate;
+    outOfRange = true;
+  } else if (inputDate > maxDate) {
+    inputDate = maxDate;
+    outOfRange = true;
+  }
+  // Find the closest index in allLabels to the input date.
+  let closestIndex = 0;
+  let smallestDiff = Math.abs(parseDateInput(allLabels[0]) - inputDate);
+  for (let i = 1; i < allLabels.length; i++) {
+    let diff = Math.abs(parseDateInput(allLabels[i]) - inputDate);
+    if (diff < smallestDiff) {
+      smallestDiff = diff;
+      closestIndex = i;
+    }
+  }
+  // Update the slider value to match the found index.
+  sliderElement.value = closestIndex;
+  updateChart();
+  // If the input was out of range, override with the bound's exact label.
+  if (outOfRange) {
+    inputElement.value = inputDate.getTime() === minDate.getTime() ? allLabels[0] : allLabels[allLabels.length - 1];
+  }
+  // Otherwise, leave the user's typed string exactly as entered.
+}
+
+// --- Modified Function to Make the Label Editable ---
+function makeLabelEditable(labelId, sliderId) {
+  const labelElem = document.getElementById(labelId);
+  labelElem.style.cursor = 'pointer';
+  labelElem.title = "Click to edit date/time";
+  labelElem.addEventListener('click', function() {
+    // Create an input field prefilled with the current date/time exactly as shown.
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = labelElem.innerText;
+    input.style.width = 'auto';
+    input.style.fontSize = 'inherit';
+    // When the input loses focus, update slider and restore label.
+    input.addEventListener('blur', function() {
+      updateSliderFromInput(input, document.getElementById(sliderId));
+      labelElem.innerText = input.value; // Use exactly what was typed (or adjusted if out-of-range)
+      labelElem.style.display = 'inline';
+      input.remove();
+    });
+    // Also update on pressing Enter.
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        input.blur();
+      }
+    });
+    labelElem.style.display = 'none';
+    labelElem.parentNode.insertBefore(input, labelElem);
+    input.focus();
+  });
+}
+
+// --- Attach Editable Functionality on DOM Ready ---
+document.addEventListener('DOMContentLoaded', function() {
+  makeLabelEditable('startValue', 'startSlider');
+  makeLabelEditable('endValue', 'endSlider');
+});
+
   </script>
 </body>
 </html>
