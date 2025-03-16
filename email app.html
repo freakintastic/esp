@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=800" />
   <title>Email Composer</title>
   <style>
     /* Preview CSS for the app interface */
@@ -100,7 +100,7 @@
       position: relative;
       margin-bottom: 10px;
     }
-    /* Attachments preview (for the app) */
+    /* Attachments preview in the app */
     #attachmentsContainer .attachment-entry {
       position: relative;
       display: inline-block;
@@ -146,7 +146,6 @@
 <body>
   <div class="container">
     <h2>Email Composer</h2>
-
     <!-- Form Sections -->
     <div class="section">
       <label>Recipient:</label>
@@ -237,7 +236,7 @@
   </div>
 
   <script>
-    // Utility: Convert newline characters to <br> tags.
+    // Convert newline characters to <br> tags.
     function nl2br(str) {
       return str.replace(/\n/g, "<br>");
     }
@@ -438,7 +437,7 @@
       
       emailContent += `<br><p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Dear AE, kindly for your review and recommendation.</p>`;
       
-      // Append attachments – fixed width 600px, centered caption within container.
+      // Append attachments – fixed container of 800px (box considered as an image)
       let attachmentsContainer = document.getElementById("attachmentsContainer");
       if (attachmentsContainer.children.length > 0) {
         emailContent += `<br>`;
@@ -447,11 +446,11 @@
           let captionText = captionInput ? captionInput.value.trim() : "";
           let img = entry.querySelector("img");
           if (img) {
-            emailContent += `<div style="display: inline-block; margin: 10px 0; border: 1px solid #ccc; width:600px; text-align: center;">`;
+            emailContent += `<div style="display: inline-block; margin: 10px 0; border: 1px solid #ccc; width:800px; text-align: center;">`;
             if (captionText) {
               emailContent += `<div style="background-color: white; text-align: center; padding: 4px; border-bottom: 1px solid #ccc; font-weight: bold; font-size: 14px;">${captionText}</div>`;
             }
-            emailContent += `<img src="${img.src}" style="width:600px; height:auto; display:block;">`;
+            emailContent += `<img src="${img.src}" style="width:800px; height:auto; display:block;">`;
             emailContent += `</div>`;
           }
         }
