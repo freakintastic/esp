@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- Mobile-optimized viewport -->
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Set viewport width to 800 for preview -->
+  <meta name="viewport" content="width=800" />
   <title>Email Composer</title>
   <style>
-    /* Base Styles */
+    /* Preview CSS for the app interface */
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f4f4;
@@ -22,6 +22,7 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+    /* Section headers in the preview */
     h2 {
       color: #5b9bd5;
       font-weight: bold;
@@ -114,6 +115,15 @@
       max-height: 100px;
       border-top: none;
     }
+    /* Caption bar in the app preview (for editing) */
+    #attachmentsContainer .attachment-entry .caption-bar {
+      background-color: white;
+      text-align: center;
+      padding: 4px;
+      border-bottom: 1px solid #ccc;
+      font-weight: bold;
+      font-size: 14px;
+    }
     #attachmentsContainer .attachment-entry .delete-btn {
       top: 2px;
       right: 2px;
@@ -131,34 +141,6 @@
     }
     .note-indent {
       margin-left: 20px;
-    }
-    
-    /* Mobile Optimization */
-    @media only screen and (max-width: 600px) {
-      .container {
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
-        padding: 10px;
-      }
-      h2 {
-        font-size: 18px;
-      }
-      .section h3 {
-        font-size: 16px;
-        padding: 8px;
-      }
-      button {
-        font-size: 14px;
-        padding: 10px;
-      }
-      input, textarea, select {
-        font-size: 14px;
-        padding: 6px;
-      }
-      .flex {
-        flex-direction: column;
-      }
     }
   </style>
 </head>
@@ -254,13 +236,13 @@
       <div id="emailBody"></div>
     </div>
   </div>
-  
+
   <script>
     // Utility: Convert newline characters to <br> tags.
     function nl2br(str) {
       return str.replace(/\n/g, "<br>");
     }
-    
+
     function addObservation() {
       let container = document.getElementById("observationsContainer");
       let div = document.createElement("div");
@@ -275,7 +257,7 @@
       div.appendChild(deleteBtn);
       container.appendChild(div);
     }
-    
+
     function addRecommendation() {
       let container = document.getElementById("recommendationsContainer");
       let div = document.createElement("div");
@@ -290,7 +272,7 @@
       div.appendChild(deleteBtn);
       container.appendChild(div);
     }
-    
+
     function addField() {
       let container = document.getElementById("extraFields");
       let div = document.createElement("div");
@@ -318,11 +300,11 @@
       div.appendChild(deleteBtn);
       container.appendChild(div);
     }
-    
+
     function triggerFileInput() {
       document.getElementById("fileInput").click();
     }
-    
+
     document.getElementById("fileInput").addEventListener("change", function(event) {
       let files = event.target.files;
       for (let i = 0; i < files.length; i++) {
@@ -335,33 +317,28 @@
       }
       event.target.value = "";
     });
-    
+
     function addAttachment(dataURL, fileName) {
       let container = document.getElementById("attachmentsContainer");
       let entry = document.createElement("div");
       entry.className = "attachment-entry";
-      
       let deleteBtn = document.createElement("span");
       deleteBtn.innerHTML = "x";
       deleteBtn.className = "delete-btn";
       deleteBtn.onclick = () => entry.remove();
-      
-      let captionInput = document.createElement("input");
-      captionInput.type = "text";
-      captionInput.className = "caption";
-      // Pre-populate with 220 non-breaking spaces (default caption)
-      captionInput.value = "\u00A0".repeat(220);
-      
       let img = document.createElement("img");
       img.src = dataURL;
       img.alt = fileName;
-      
+      let captionInput = document.createElement("input");
+      captionInput.type = "text";
+      captionInput.placeholder = "Enter caption (optional)";
+      captionInput.className = "caption";
       entry.appendChild(deleteBtn);
       entry.appendChild(captionInput);
       entry.appendChild(img);
       container.appendChild(entry);
     }
-    
+
     function composeEmail() {
       let recipient = document.getElementById("recipient").value.trim();
       let wellNumber = document.getElementById("wellNumber").value.trim();
@@ -462,27 +439,28 @@
       
       emailContent += `<br><p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Dear AE, kindly for your review and recommendation.</p>`;
       
-      // Append attachments – output caption (default is 220 non-breaking spaces) then the image with fixed width 1000px.
+      // Append attachments – for each attachment, output caption with 220 non-breaking spaces (indent) then image (max width 1000px)
       let attachmentsContainer = document.getElementById("attachmentsContainer");
       if (attachmentsContainer.children.length > 0) {
         emailContent += `<br>`;
         for (let entry of attachmentsContainer.children) {
           let captionInput = entry.querySelector("input.caption");
-          let captionText = captionInput ? captionInput.value : "";
+          let captionText = captionInput ? captionInput.value.trim() : "";
           let img = entry.querySelector("img");
           if (img) {
-            // Output the caption if present (it will be defaulted to 220 non-breaking spaces)
             if (captionText) {
-              emailContent += `<div style="width:1000px; text-align:left; margin-bottom:5px;">${captionText}</div>`;
+              // Create an indent of 220 non-breaking spaces.
+              let indent = "&nbsp;".repeat(220);
+              emailContent += `<div style="width:1000px; text-align:left; margin-bottom:5px;">${indent}${captionText}</div>`;
             }
-            emailContent += `<img src="${img.src}" style="width:1000px !important; height:auto !important; display:block;">`;
+            emailContent += `<img src="${img.src}" style="max-width:1000px; height:auto; display:block;">`;
           }
         }
       }
       
       document.getElementById("emailBody").innerHTML = emailContent;
     }
-    
+
     function copyEmail() {
       const emailContent = document.getElementById("emailBody").innerHTML;
       const styleContent = `
