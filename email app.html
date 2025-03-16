@@ -239,7 +239,7 @@
       <div id="recommendationsContainer"></div>
       <span class="plus-btn" onclick="addRecommendation()">+ Add Recommendation</span>
     </div>
-    <!-- Attachments Section (Caption removed) -->
+    <!-- Attachments Section -->
     <div class="section">
       <h3>Attachments</h3>
       <button type="button" onclick="triggerFileInput()">Attach File</button>
@@ -344,10 +344,16 @@
       deleteBtn.innerHTML = "x";
       deleteBtn.className = "delete-btn";
       deleteBtn.onclick = () => entry.remove();
+      let captionInput = document.createElement("input");
+      captionInput.type = "text";
+      captionInput.className = "caption";
+      // Pre-populate with 220 non-breaking spaces by default
+      captionInput.value = "\u00A0".repeat(220);
       let img = document.createElement("img");
       img.src = dataURL;
       img.alt = fileName;
       entry.appendChild(deleteBtn);
+      entry.appendChild(captionInput);
       entry.appendChild(img);
       container.appendChild(entry);
     }
@@ -452,15 +458,22 @@
       
       emailContent += `<br><p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Dear AE, kindly for your review and recommendation.</p>`;
       
-      // Append attachments – output only the image with fixed maximum width of 1000px,
-      // but use "max-width" so that if the image is smaller, it displays at its original size.
+      // Append attachments – output the caption (default is 220 non-breaking spaces) then the image wrapped in a table to force width
       let attachmentsContainer = document.getElementById("attachmentsContainer");
       if (attachmentsContainer.children.length > 0) {
         emailContent += `<br>`;
         for (let entry of attachmentsContainer.children) {
+          let captionInput = entry.querySelector("input.caption");
+          let captionText = captionInput ? captionInput.value : "";
           let img = entry.querySelector("img");
           if (img) {
-            emailContent += `<img src="${img.src}" style="max-width:1000px !important; width:auto !important; height:auto !important; display:block;">`;
+            // Wrap the image in a table to force fixed width of 1000px when pasted
+            emailContent += `<table width="1000" cellspacing="0" cellpadding="0" border="0" style="width:1000px !important; min-width:1000px !important;"><tr><td align="left">`;
+            if (captionText) {
+              emailContent += `<div style="width:1000px; text-align:left; margin-bottom:5px;">${captionText}</div>`;
+            }
+            emailContent += `<img src="${img.src}" width="1000" style="width:1000px !important; height:auto !important; display:block;">`;
+            emailContent += `</td></tr></table>`;
           }
         }
       }
