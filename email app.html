@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Mobile-optimized viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Email Composer</title>
   <style>
-    /* Preview CSS */
+    /* Base Styles */
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f4f4;
@@ -21,7 +22,6 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    /* Use Outlook-like light blue for section headers */
     h2 {
       color: #5b9bd5;
       font-weight: bold;
@@ -100,28 +100,19 @@
       position: relative;
       margin-bottom: 10px;
     }
-    /* Attachments preview in the app */
+    /* Attachments preview (for the app) */
     #attachmentsContainer .attachment-entry {
       position: relative;
       display: inline-block;
       margin: 5px;
       border: 1px solid #ccc;
-      text-align: center;
+      text-align: left;
     }
     #attachmentsContainer .attachment-entry img {
       display: block;
       max-width: 100px;
       max-height: 100px;
       border-top: none;
-    }
-    /* Caption bar above the attachment images – centered */
-    #attachmentsContainer .attachment-entry .caption-bar {
-      background-color: white;
-      text-align: center;
-      padding: 4px;
-      border-bottom: 1px solid #ccc;
-      font-weight: bold;
-      font-size: 14px;
     }
     #attachmentsContainer .attachment-entry .delete-btn {
       top: 2px;
@@ -141,12 +132,39 @@
     .note-indent {
       margin-left: 20px;
     }
+    /* Mobile Optimization */
+    @media only screen and (max-width: 600px) {
+      .container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 10px;
+      }
+      h2 {
+        font-size: 18px;
+      }
+      .section h3 {
+        font-size: 16px;
+        padding: 8px;
+      }
+      button {
+        font-size: 14px;
+        padding: 10px;
+      }
+      input, textarea, select {
+        font-size: 14px;
+        padding: 6px;
+      }
+      .flex {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Email Composer</h2>
-
+    
     <!-- Form Sections -->
     <div class="section">
       <label>Recipient:</label>
@@ -220,7 +238,7 @@
       <div id="recommendationsContainer"></div>
       <span class="plus-btn" onclick="addRecommendation()">+ Add Recommendation</span>
     </div>
-    <!-- Attachments Section -->
+    <!-- Attachments Section (Caption option removed) -->
     <div class="section">
       <h3>Attachments</h3>
       <button type="button" onclick="triggerFileInput()">Attach File</button>
@@ -230,19 +248,18 @@
     <button onclick="composeEmail()">Generate Email</button>
     <button onclick="copyEmail()">Copy Email</button>
     <button onclick="window.location.href='index.html'">Back to Main Menu</button>
-
     <div class="email-preview" id="emailPreview">
       <h3>Email Preview:</h3>
       <div id="emailBody"></div>
     </div>
   </div>
-
+  
   <script>
-    // Convert newline characters to <br> tags.
+    // Utility: Convert newline characters to <br> tags.
     function nl2br(str) {
       return str.replace(/\n/g, "<br>");
     }
-
+    
     function addObservation() {
       let container = document.getElementById("observationsContainer");
       let div = document.createElement("div");
@@ -257,7 +274,7 @@
       div.appendChild(deleteBtn);
       container.appendChild(div);
     }
-
+    
     function addRecommendation() {
       let container = document.getElementById("recommendationsContainer");
       let div = document.createElement("div");
@@ -272,7 +289,7 @@
       div.appendChild(deleteBtn);
       container.appendChild(div);
     }
-
+    
     function addField() {
       let container = document.getElementById("extraFields");
       let div = document.createElement("div");
@@ -300,11 +317,11 @@
       div.appendChild(deleteBtn);
       container.appendChild(div);
     }
-
+    
     function triggerFileInput() {
       document.getElementById("fileInput").click();
     }
-
+    
     document.getElementById("fileInput").addEventListener("change", function(event) {
       let files = event.target.files;
       for (let i = 0; i < files.length; i++) {
@@ -317,7 +334,7 @@
       }
       event.target.value = "";
     });
-
+    
     function addAttachment(dataURL, fileName) {
       let container = document.getElementById("attachmentsContainer");
       let entry = document.createElement("div");
@@ -329,56 +346,55 @@
       let img = document.createElement("img");
       img.src = dataURL;
       img.alt = fileName;
-      let captionInput = document.createElement("input");
-      captionInput.type = "text";
-      captionInput.placeholder = "Enter caption (optional)";
-      captionInput.className = "caption";
       entry.appendChild(deleteBtn);
-      entry.appendChild(captionInput);
       entry.appendChild(img);
       container.appendChild(entry);
     }
-
+    
     function composeEmail() {
       let recipient = document.getElementById("recipient").value.trim();
       let wellNumber = document.getElementById("wellNumber").value.trim();
       let emailContent = "";
-      emailContent += `<p>Dear, ${recipient}</p><br>`;
-      emailContent += `<p>Kindly find below the update and observations for (${wellNumber}) with all data attached.</p><br>`;
-      emailContent += `<h2>Existing Condition:</h2>`;
-      emailContent += `<ul>`;
+      
+      // Greeting and introduction
+      emailContent += `<p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Dear, ${recipient}</p><br>`;
+      emailContent += `<p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Kindly find below the update and observations for (${wellNumber}) with all data attached.</p><br>`;
+      
+      // Existing Condition section header
+      emailContent += `<h2 style="color: #5b9bd5; font-weight: bold; font-size: 20px; text-align: left; margin:10px 0;">Existing Condition:</h2>`;
+      emailContent += `<ul style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 20px; padding:0;">`;
       let hp = document.getElementById("hp").value.trim();
       let voltage = document.getElementById("voltage").value.trim();
       let amps = document.getElementById("amps").value.trim();
       if (hp || voltage || amps) {
-        emailContent += `<li>Motor Details: (${hp} HP, ${voltage} V, ${amps} A) @50 hz</li>`;
+        emailContent += `<li style="margin-bottom: 5px;">Motor Details: (${hp} HP, ${voltage} V, ${amps} A) @50 hz</li>`;
       }
       let pumpType = document.getElementById("pumpType").value.trim();
       let minRange = document.getElementById("minRange").value.trim();
       let maxRange = document.getElementById("maxRange").value.trim();
       if (pumpType) {
-        emailContent += `<li>Pump Details: ${pumpType} (${minRange} - ${maxRange})</li>`;
+        emailContent += `<li style="margin-bottom: 5px;">Pump Details: ${pumpType} (${minRange} - ${maxRange})</li>`;
       }
       if (document.getElementById("runningMode").value.trim() !== "") {
-        emailContent += `<li>Running Mode: ${document.getElementById("runningMode").value.trim()}</li>`;
+        emailContent += `<li style="margin-bottom: 5px;">Running Mode: ${document.getElementById("runningMode").value.trim()}</li>`;
       }
       if (document.getElementById("transformerRatio").value.trim() !== "") {
-        emailContent += `<li>Transformer Ratio: ${document.getElementById("transformerRatio").value.trim()}</li>`;
+        emailContent += `<li style="margin-bottom: 5px;">Transformer Ratio: ${document.getElementById("transformerRatio").value.trim()}</li>`;
       }
       if (document.getElementById("stringType").value.trim() !== "") {
-        emailContent += `<li>String Type: ${document.getElementById("stringType").value.trim()}</li>`;
+        emailContent += `<li style="margin-bottom: 5px;">String Type: ${document.getElementById("stringType").value.trim()}</li>`;
       }
       if (document.getElementById("chokeSize").value.trim() !== "") {
-        emailContent += `<li>Choke Size: ${document.getElementById("chokeSize").value.trim()}</li>`;
+        emailContent += `<li style="margin-bottom: 5px;">Choke Size: ${document.getElementById("chokeSize").value.trim()}</li>`;
       }
       if (document.getElementById("casingStatus").value.trim() !== "") {
-        emailContent += `<li>Casing Status: ${document.getElementById("casingStatus").value.trim()}</li>`;
+        emailContent += `<li style="margin-bottom: 5px;">Casing Status: ${document.getElementById("casingStatus").value.trim()}</li>`;
       }
       if (document.getElementById("scada").value.trim() !== "") {
-        emailContent += `<li>Scada: ${document.getElementById("scada").value.trim()}</li>`;
+        emailContent += `<li style="margin-bottom: 5px;">Scada: ${document.getElementById("scada").value.trim()}</li>`;
       }
       if (document.getElementById("cip").value.trim() !== "") {
-        emailContent += `<li>CIP: ${document.getElementById("cip").value.trim()}</li>`;
+        emailContent += `<li style="margin-bottom: 5px;">CIP: ${document.getElementById("cip").value.trim()}</li>`;
       }
       let extraFieldsContainer = document.getElementById("extraFields");
       for (let child of extraFieldsContainer.children) {
@@ -393,88 +409,86 @@
           details = child.querySelector("textarea").value.trim();
         }
         if (categoryName !== "" || details !== "") {
-          emailContent += `<li>${categoryName}: ${nl2br(details)}</li>`;
+          emailContent += `<li style="margin-bottom: 5px;">${categoryName}: ${nl2br(details)}</li>`;
         }
       }
       emailContent += `</ul>`;
-      emailContent += `<h2>Field Observation & Analysis:</h2>`;
-      emailContent += `<ul>`;
+      
+      // Field Observation & Analysis section
+      emailContent += `<h2 style="color: #5b9bd5; font-weight: bold; font-size: 20px; text-align: left; margin:10px 0;">Field Observation & Analysis:</h2>`;
+      emailContent += `<ul style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 20px; padding:0;">`;
       if (document.getElementById("commissioningDate").value.trim() !== "") {
-        emailContent += `<li>Commissioning Date: ${document.getElementById("commissioningDate").value.trim()}</li>`;
+        emailContent += `<li style="margin-bottom: 5px;">Commissioning Date: ${document.getElementById("commissioningDate").value.trim()}</li>`;
       }
       if (document.getElementById("pgortDate").value.trim() !== "") {
-        emailContent += `<li>Last PGORT Date: ${document.getElementById("pgortDate").value.trim()}</li>`;
+        emailContent += `<li style="margin-bottom: 5px;">Last PGORT Date: ${document.getElementById("pgortDate").value.trim()}</li>`;
       }
       let observationElements = document.querySelectorAll("#observationsContainer .observation");
       observationElements.forEach(obs => {
         if (obs.value.trim() !== "") {
-          emailContent += `<li>${nl2br(obs.value.trim())}</li>`;
+          emailContent += `<li style="margin-bottom: 5px;">${nl2br(obs.value.trim())}</li>`;
         }
       });
       emailContent += `</ul><br>`;
+      
+      // Note section
       if (document.getElementById("note").value.trim() !== "") {
-        emailContent += `<div class="note-indent"><p><span style="color:red; font-weight:bold;">Note:</span> ${nl2br(document.getElementById("note").value.trim())}</p></div>`;
+        emailContent += `<div style="margin-left:20px;"><p style="font-family: Arial, sans-serif; font-size: 14px;"><span style="color:red; font-weight:bold;">Note:</span> ${nl2br(document.getElementById("note").value.trim())}</p></div>`;
       }
-      emailContent += `<h2>Field Recommendations:</h2>`;
+      
+      // Field Recommendations section
+      emailContent += `<h2 style="color: #5b9bd5; font-weight: bold; font-size: 20px; text-align: left; margin:10px 0;">Field Recommendations:</h2>`;
       let recommendationElements = document.querySelectorAll("#recommendationsContainer .recommendation");
       if (recommendationElements.length > 0) {
-        emailContent += `<ul>`;
+        emailContent += `<ul style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 20px; padding:0;">`;
         recommendationElements.forEach(rec => {
           if (rec.value.trim() !== "") {
-            emailContent += `<li>${nl2br(rec.value.trim())}</li>`;
+            emailContent += `<li style="margin-bottom: 5px;">${nl2br(rec.value.trim())}</li>`;
           }
         });
         emailContent += `</ul>`;
       }
-      emailContent += `<br><p>Dear AE, kindly for your review and recommendation.</p>`;
+      
+      emailContent += `<br><p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Dear AE, kindly for your review and recommendation.</p>`;
+      
+      // Append attachments – output only the image with fixed width of 1000px.
       let attachmentsContainer = document.getElementById("attachmentsContainer");
       if (attachmentsContainer.children.length > 0) {
         emailContent += `<br>`;
         for (let entry of attachmentsContainer.children) {
-          let captionInput = entry.querySelector("input.caption");
-          let captionText = captionInput ? captionInput.value.trim() : "";
           let img = entry.querySelector("img");
           if (img) {
-            // Attachment container with max-width 1000px and left alignment.
-            emailContent += `<div style="display: block; margin: 10px 0; border: 1px solid #ccc; max-width:1000px; width:100%; text-align: left;">`;
-            if (captionText) {
-              // Caption bar centered within the container.
-              emailContent += `<div class="caption-bar">${captionText}</div>`;
-            }
-            emailContent += `<img src="${img.src}" style="width:100%; height:auto; display:block;">`;
-            emailContent += `</div>`;
+            emailContent += `<img src="${img.src}" style="width:1000px; height:auto; display:block;">`;
           }
         }
       }
+      
       document.getElementById("emailBody").innerHTML = emailContent;
     }
-
+    
     function copyEmail() {
       const emailContent = document.getElementById("emailBody").innerHTML;
       const styleContent = `
         p { font-family: Arial, sans-serif; margin: 0 0 10px 0; }
-        h2 { color: #5b9bd5; font-weight: bold; font-size: 20px; text-align: left; margin: 10px 0; background: none; }
         ul { list-style: disc; margin-left: 20px; padding: 0; }
         li { margin-bottom: 5px; }
-        .note-indent { margin-left: 20px; }
-        .caption-bar { background-color: white; text-align: center; padding: 4px; border-bottom: 1px solid #ccc; font-weight: bold; font-size: 14px; }
-        /* Attachment container for copied email: max-width 1000px, responsive */
-        .attachment-container { display: block; margin: 10px 0; border: 1px solid #ccc; max-width:1000px; width:100%; text-align: left; }
-        .attachment-container img { width: 100%; height: auto; display: block; }
       `;
       const fullHtml = `<html><head><meta charset="UTF-8"><style>${styleContent}</style></head><body>${emailContent}</body></html>`;
+      
       const tempDiv = document.createElement("div");
       tempDiv.style.position = "absolute";
       tempDiv.style.left = "-9999px";
       tempDiv.contentEditable = true;
       tempDiv.innerHTML = fullHtml;
       document.body.appendChild(tempDiv);
+      
       const range = document.createRange();
       range.selectNodeContents(tempDiv);
       const selection = window.getSelection();
       selection.removeAllRanges();
       selection.addRange(range);
       document.execCommand("copy");
+      
       document.body.removeChild(tempDiv);
       window.location.href = "mailto:";
     }
