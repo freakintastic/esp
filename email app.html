@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <!-- Set viewport width to 800 (for preview) -->
   <meta name="viewport" content="width=800" />
   <title>Email Composer</title>
   <style>
@@ -100,13 +101,13 @@
       position: relative;
       margin-bottom: 10px;
     }
-    /* Attachments preview in the app */
+    /* Attachments preview (for the app) */
     #attachmentsContainer .attachment-entry {
       position: relative;
       display: inline-block;
       margin: 5px;
       border: 1px solid #ccc;
-      text-align: center;
+      text-align: left; /* Align left in preview */
     }
     #attachmentsContainer .attachment-entry img {
       display: block;
@@ -114,7 +115,7 @@
       max-height: 100px;
       border-top: none;
     }
-    /* Caption bar above the attachment images – centered */
+    /* Caption bar in preview (only used in the app for editing) */
     #attachmentsContainer .attachment-entry .caption-bar {
       background-color: white;
       text-align: center;
@@ -437,7 +438,7 @@
       
       emailContent += `<br><p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Dear AE, kindly for your review and recommendation.</p>`;
       
-      // Append attachments – fixed container of 800px (box considered as an image)
+      // Append attachments – output the caption (if exists) and then the image, fixed at 1000px max.
       let attachmentsContainer = document.getElementById("attachmentsContainer");
       if (attachmentsContainer.children.length > 0) {
         emailContent += `<br>`;
@@ -446,12 +447,11 @@
           let captionText = captionInput ? captionInput.value.trim() : "";
           let img = entry.querySelector("img");
           if (img) {
-            emailContent += `<div style="display: inline-block; margin: 10px 0; border: 1px solid #ccc; width:800px; text-align: center;">`;
+            // Output caption above the image, centered relative to the image width (1000px)
             if (captionText) {
-              emailContent += `<div style="background-color: white; text-align: center; padding: 4px; border-bottom: 1px solid #ccc; font-weight: bold; font-size: 14px;">${captionText}</div>`;
+              emailContent += `<div style="width:1000px; text-align:center; margin-bottom:5px;">${captionText}</div>`;
             }
-            emailContent += `<img src="${img.src}" style="width:800px; height:auto; display:block;">`;
-            emailContent += `</div>`;
+            emailContent += `<img src="${img.src}" style="max-width:1000px; height:auto; display:block;">`;
           }
         }
       }
