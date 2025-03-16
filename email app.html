@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- Set viewport width to 800 for preview -->
-  <meta name="viewport" content="width=800" />
+  <!-- Mobile-optimized viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Email Composer</title>
   <style>
-    /* Preview CSS for the app interface */
+    /* Base Styles */
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f4f4;
@@ -22,7 +22,6 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    /* Section headers in the preview */
     h2 {
       color: #5b9bd5;
       font-weight: bold;
@@ -132,6 +131,34 @@
     }
     .note-indent {
       margin-left: 20px;
+    }
+
+    /* Mobile Optimization */
+    @media only screen and (max-width: 600px) {
+      .container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 10px;
+      }
+      h2 {
+        font-size: 18px;
+      }
+      .section h3 {
+        font-size: 16px;
+        padding: 8px;
+      }
+      button {
+        font-size: 14px;
+        padding: 10px;
+      }
+      input, textarea, select {
+        font-size: 14px;
+        padding: 6px;
+      }
+      .flex {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
@@ -425,7 +452,7 @@
       
       emailContent += `<br><p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Dear AE, kindly for your review and recommendation.</p>`;
       
-      // Append attachments – now output only the image with fixed max width of 1000px.
+      // Append attachments – output only the image with fixed max width of 1000px.
       let attachmentsContainer = document.getElementById("attachmentsContainer");
       if (attachmentsContainer.children.length > 0) {
         emailContent += `<br>`;
