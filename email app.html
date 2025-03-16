@@ -132,7 +132,7 @@
     .note-indent {
       margin-left: 20px;
     }
-
+    
     /* Mobile Optimization */
     @media only screen and (max-width: 600px) {
       .container {
@@ -165,7 +165,7 @@
 <body>
   <div class="container">
     <h2>Email Composer</h2>
-
+    
     <!-- Form Sections -->
     <div class="section">
       <label>Recipient:</label>
@@ -254,13 +254,13 @@
       <div id="emailBody"></div>
     </div>
   </div>
-
+  
   <script>
-    // Convert newline characters to <br> tags.
+    // Utility: Convert newline characters to <br> tags.
     function nl2br(str) {
       return str.replace(/\n/g, "<br>");
     }
-
+    
     function addObservation() {
       let container = document.getElementById("observationsContainer");
       let div = document.createElement("div");
@@ -275,7 +275,7 @@
       div.appendChild(deleteBtn);
       container.appendChild(div);
     }
-
+    
     function addRecommendation() {
       let container = document.getElementById("recommendationsContainer");
       let div = document.createElement("div");
@@ -290,7 +290,7 @@
       div.appendChild(deleteBtn);
       container.appendChild(div);
     }
-
+    
     function addField() {
       let container = document.getElementById("extraFields");
       let div = document.createElement("div");
@@ -318,11 +318,11 @@
       div.appendChild(deleteBtn);
       container.appendChild(div);
     }
-
+    
     function triggerFileInput() {
       document.getElementById("fileInput").click();
     }
-
+    
     document.getElementById("fileInput").addEventListener("change", function(event) {
       let files = event.target.files;
       for (let i = 0; i < files.length; i++) {
@@ -335,7 +335,7 @@
       }
       event.target.value = "";
     });
-
+    
     function addAttachment(dataURL, fileName) {
       let container = document.getElementById("attachmentsContainer");
       let entry = document.createElement("div");
@@ -351,7 +351,7 @@
       entry.appendChild(img);
       container.appendChild(entry);
     }
-
+    
     function composeEmail() {
       let recipient = document.getElementById("recipient").value.trim();
       let wellNumber = document.getElementById("wellNumber").value.trim();
@@ -452,21 +452,21 @@
       
       emailContent += `<br><p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Dear AE, kindly for your review and recommendation.</p>`;
       
-      // Append attachments – output only the image with fixed max width of 1000px.
+      // Append attachments – output only the image with fixed width of 1000px.
       let attachmentsContainer = document.getElementById("attachmentsContainer");
       if (attachmentsContainer.children.length > 0) {
         emailContent += `<br>`;
         for (let entry of attachmentsContainer.children) {
           let img = entry.querySelector("img");
           if (img) {
-            emailContent += `<img src="${img.src}" style="max-width:1000px; height:auto; display:block;">`;
+            emailContent += `<img src="${img.src}" style="width:1000px; height:auto; display:block;">`;
           }
         }
       }
       
       document.getElementById("emailBody").innerHTML = emailContent;
     }
-
+    
     function copyEmail() {
       const emailContent = document.getElementById("emailBody").innerHTML;
       const styleContent = `
