@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- Set viewport width to 800 (for preview) -->
-  <meta name="viewport" content="width=800" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Email Composer</title>
   <style>
     /* Preview CSS for the app interface */
@@ -101,13 +100,13 @@
       position: relative;
       margin-bottom: 10px;
     }
-    /* Attachments preview (for the app) */
+    /* Attachments preview in the app */
     #attachmentsContainer .attachment-entry {
       position: relative;
       display: inline-block;
       margin: 5px;
       border: 1px solid #ccc;
-      text-align: left; /* Align left in preview */
+      text-align: center;
     }
     #attachmentsContainer .attachment-entry img {
       display: block;
@@ -115,7 +114,7 @@
       max-height: 100px;
       border-top: none;
     }
-    /* Caption bar in preview (only used in the app for editing) */
+    /* Caption bar above the attachment images – centered */
     #attachmentsContainer .attachment-entry .caption-bar {
       background-color: white;
       text-align: center;
@@ -147,6 +146,7 @@
 <body>
   <div class="container">
     <h2>Email Composer</h2>
+
     <!-- Form Sections -->
     <div class="section">
       <label>Recipient:</label>
@@ -237,7 +237,7 @@
   </div>
 
   <script>
-    // Convert newline characters to <br> tags.
+    // Utility: Convert newline characters to <br> tags.
     function nl2br(str) {
       return str.replace(/\n/g, "<br>");
     }
@@ -347,7 +347,7 @@
       emailContent += `<p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Dear, ${recipient}</p><br>`;
       emailContent += `<p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Kindly find below the update and observations for (${wellNumber}) with all data attached.</p><br>`;
       
-      // Existing Condition section header
+      // Existing Condition section header (fixed light blue color)
       emailContent += `<h2 style="color: #5b9bd5; font-weight: bold; font-size: 20px; text-align: left; margin:10px 0;">Existing Condition:</h2>`;
       emailContent += `<ul style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 20px; padding:0;">`;
       let hp = document.getElementById("hp").value.trim();
@@ -420,7 +420,7 @@
       
       // Note section
       if (document.getElementById("note").value.trim() !== "") {
-        emailContent += `<div style="margin-left:20px;"><p style="font-family: Arial, sans-serif; font-size: 14px;"><span style="color:red; font-weight:bold;">Note:</span> ${nl2br(document.getElementById("note").value.trim())}</p></div>`;
+        emailContent += `<div class="note-indent" style="margin-left:20px;"><p style="font-family: Arial, sans-serif; font-size: 14px;"><span style="color:red; font-weight:bold;">Note:</span> ${nl2br(document.getElementById("note").value.trim())}</p></div>`;
       }
       
       // Field Recommendations section
@@ -438,7 +438,7 @@
       
       emailContent += `<br><p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Dear AE, kindly for your review and recommendation.</p>`;
       
-      // Append attachments – output the caption (if exists) and then the image, fixed at 1000px max.
+      // Append attachments: Fixed width 1000px, left aligned.
       let attachmentsContainer = document.getElementById("attachmentsContainer");
       if (attachmentsContainer.children.length > 0) {
         emailContent += `<br>`;
@@ -447,11 +447,13 @@
           let captionText = captionInput ? captionInput.value.trim() : "";
           let img = entry.querySelector("img");
           if (img) {
-            // Output caption above the image, centered relative to the image width (1000px)
+            emailContent += `<div style="display: block; margin: 10px 0; border: 1px solid #ccc; width:1000px; text-align: left;">`;
             if (captionText) {
-              emailContent += `<div style="width:1000px; text-align:center; margin-bottom:5px;">${captionText}</div>`;
+              // Caption bar centered within the container
+              emailContent += `<div style="background-color: white; text-align: center; padding: 4px; border-bottom: 1px solid #ccc; font-weight: bold; font-size: 14px;">${captionText}</div>`;
             }
-            emailContent += `<img src="${img.src}" style="max-width:1000px; height:auto; display:block;">`;
+            emailContent += `<img src="${img.src}" style="width:1000px; height:auto; display:block;">`;
+            emailContent += `</div>`;
           }
         }
       }
