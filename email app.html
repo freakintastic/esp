@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- Set viewport width to 800 (for preview) -->
+  <!-- Set viewport width to 800 for preview -->
   <meta name="viewport" content="width=800" />
   <title>Email Composer</title>
   <style>
@@ -107,22 +107,13 @@
       display: inline-block;
       margin: 5px;
       border: 1px solid #ccc;
-      text-align: left; /* Align left in preview */
+      text-align: left;
     }
     #attachmentsContainer .attachment-entry img {
       display: block;
       max-width: 100px;
       max-height: 100px;
       border-top: none;
-    }
-    /* Caption bar in preview (only used in the app for editing) */
-    #attachmentsContainer .attachment-entry .caption-bar {
-      background-color: white;
-      text-align: center;
-      padding: 4px;
-      border-bottom: 1px solid #ccc;
-      font-weight: bold;
-      font-size: 14px;
     }
     #attachmentsContainer .attachment-entry .delete-btn {
       top: 2px;
@@ -147,6 +138,7 @@
 <body>
   <div class="container">
     <h2>Email Composer</h2>
+
     <!-- Form Sections -->
     <div class="section">
       <label>Recipient:</label>
@@ -328,12 +320,7 @@
       let img = document.createElement("img");
       img.src = dataURL;
       img.alt = fileName;
-      let captionInput = document.createElement("input");
-      captionInput.type = "text";
-      captionInput.placeholder = "Enter caption (optional)";
-      captionInput.className = "caption";
       entry.appendChild(deleteBtn);
-      entry.appendChild(captionInput);
       entry.appendChild(img);
       container.appendChild(entry);
     }
@@ -438,19 +425,13 @@
       
       emailContent += `<br><p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Dear AE, kindly for your review and recommendation.</p>`;
       
-      // Append attachments – output the caption (if exists) and then the image, fixed at 1000px max.
+      // Append attachments – now output only the image with fixed max width of 1000px.
       let attachmentsContainer = document.getElementById("attachmentsContainer");
       if (attachmentsContainer.children.length > 0) {
         emailContent += `<br>`;
         for (let entry of attachmentsContainer.children) {
-          let captionInput = entry.querySelector("input.caption");
-          let captionText = captionInput ? captionInput.value.trim() : "";
           let img = entry.querySelector("img");
           if (img) {
-            // Output caption above the image, centered relative to the image width (1000px)
-            if (captionText) {
-              emailContent += `<div style="width:1000px; text-align:center; margin-bottom:5px;">${captionText}</div>`;
-            }
             emailContent += `<img src="${img.src}" style="max-width:1000px; height:auto; display:block;">`;
           }
         }
