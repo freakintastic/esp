@@ -119,6 +119,10 @@
       right: 2px;
       font-size: 12px;
     }
+    /* Hide caption input in the app interface */
+    .caption {
+      display: none;
+    }
     .email-preview {
       margin-top: 20px;
       background: #fff;
@@ -132,7 +136,6 @@
     .note-indent {
       margin-left: 20px;
     }
-    
     /* Mobile Optimization */
     @media only screen and (max-width: 600px) {
       .container {
@@ -239,7 +242,7 @@
       <div id="recommendationsContainer"></div>
       <span class="plus-btn" onclick="addRecommendation()">+ Add Recommendation</span>
     </div>
-    <!-- Attachments Section (Caption reintroduced with default value) -->
+    <!-- Attachments Section -->
     <div class="section">
       <h3>Attachments</h3>
       <button type="button" onclick="triggerFileInput()">Attach File</button>
@@ -340,15 +343,16 @@
       let container = document.getElementById("attachmentsContainer");
       let entry = document.createElement("div");
       entry.className = "attachment-entry";
+      
       let deleteBtn = document.createElement("span");
       deleteBtn.innerHTML = "x";
       deleteBtn.className = "delete-btn";
       deleteBtn.onclick = () => entry.remove();
       
+      // Caption input remains for forcing the image size but is hidden
       let captionInput = document.createElement("input");
       captionInput.type = "text";
       captionInput.className = "caption";
-      // Pre-populate with 220 non-breaking spaces by default
       captionInput.value = "\u00A0".repeat(220);
       
       let img = document.createElement("img");
@@ -461,7 +465,7 @@
       
       emailContent += `<br><p style="font-family: Arial, sans-serif; font-size: 14px; margin:0 0 10px 0;">Dear AE, kindly for your review and recommendation.</p>`;
       
-      // Append attachments – output the caption (which is now pre-populated by default) then the image wrapped in a table for fixed width of 1000px.
+      // Append attachments – wrap each image (with its default caption) in a table to force fixed width
       let attachmentsContainer = document.getElementById("attachmentsContainer");
       if (attachmentsContainer.children.length > 0) {
         emailContent += `<br>`;
